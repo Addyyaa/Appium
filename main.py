@@ -3,7 +3,7 @@ from VersionSelection import VersionSelection
 from LoginPage import LoginPage
 Language = 'Chinese'
 Vesions = 'Chinese'
-Agreement = False
+Agreement = True
 driver = get_driver()
 version = VersionSelection(driver)
 version.version_selection(version=Vesions, language=Language)
