@@ -1,0 +1,1 @@
+sms_code = '//*[contains(@text, "请勿泄露于他人")]'
