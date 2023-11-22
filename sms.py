@@ -10,7 +10,11 @@ class SMS:
         wait = WebDriverWait(self.driver, 30)
         print("打开通知栏")
         self.driver.open_notifications()
-        print("通知栏已经打开,开始获取验证码")
+        print("通知栏已经打开并清除已有通知,开始获取验证码")
+        # 清除通知栏内容防止读取到以前的验证码
+        self.driver.find_element(by='id', value=ElementSMS.notification_clear).click()
+        self.driver.open_notifications()
+        self.driver.implicitly_wait(1)
         try:
             code = wait.until(EC.visibility_of_element_located((By.XPATH, ElementSMS.sms_code)))
             if code:
