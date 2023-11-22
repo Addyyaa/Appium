@@ -11,9 +11,6 @@ class SMS:
         print("打开通知栏")
         self.driver.open_notifications()
         print("通知栏已经打开并清除已有通知,开始获取验证码")
-        # 清除通知栏内容防止读取到以前的验证码
-        self.driver.find_element(by='id', value=ElementSMS.notification_clear).click()
-        self.driver.open_notifications()
         self.driver.implicitly_wait(1)
         try:
             code = wait.until(EC.visibility_of_element_located((By.XPATH, ElementSMS.sms_code)))
@@ -24,7 +21,8 @@ class SMS:
                 print(f"验证码为:{verify_code}")
                 if verify_code:
                     print("即将关闭通知栏")
-                    self.driver.press_keycode(4)
+                    # 清除通知栏内容防止下次获取验证码时读取到以前的验证码
+                    self.driver.find_element(by='id', value=ElementSMS.notification_clear).click()
                     print("通知栏已关闭")
                     self.driver.implicitly_wait(1)
                     return str(verify_code)
