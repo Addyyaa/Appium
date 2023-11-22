@@ -16,14 +16,21 @@ class SMS:
             if code:
                 print("验证码获取成功")
                 pattern = r"验证码为：(\d+)"
-                verify_code = re.search(pattern, code.text)
+                verify_code = re.search(pattern, code.text).group(1)
+                print(f"验证码为:{verify_code}")
                 if verify_code:
+                    print("返回验证码")
                     return verify_code
                 else:
                     print("验证码获取失败，未能正则匹配到验证码")
             else:
                 print("验证码获取失败，我找到对应元素")
+            print("即将关闭通知栏")
+            self.driver.press_keycode(4)
+            print("关闭通知栏")
+            self.driver.implicitly_wait(1)
         except TimeoutError:
             print("超时，未找到元素")
-        self.driver.press_keycode(4)
+        print("按下返回键")
+
 
