@@ -1,4 +1,5 @@
 from Element import Element_version
+from time import sleep
 
 
 class VersionSelection:
@@ -11,8 +12,9 @@ class VersionSelection:
     def version_selection(self, version="Chinese", language="Chinese"):
         self.driver.implicitly_wait(10)
         judege = self.driver.find_element(by='id', value=self.element.judege)
-        print(judege.text)
-        if judege.text == "同意并接受":
+        judege_content = judege.text
+        sleep(0.5)
+        if judege_content == "同意并接受":
             print('判断通过')
             judege.click()
             print('已同意')
@@ -50,7 +52,7 @@ class VersionSelection:
             else:
                 print("error")
             print("开始识别中英文版本")
-        elif judege.text == "ACCEPT":
+        elif judege_content == "ACCEPT":
             print("已识别为英文")
             judege.click()
             print("已点击接受")

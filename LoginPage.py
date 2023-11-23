@@ -1,7 +1,10 @@
-import Init
+from selenium.common.exceptions import NoSuchElementException
 from Element import Element_version
 from sms import SMS
 from Config import Config
+from ElementTips import login_page_tips
+import sys
+from time import sleep
 
 class LoginPage:
     element = Element_version()
@@ -124,6 +127,21 @@ class LoginPage:
             else:
                 print("未找到当前地域的元素")
 
+    def user_exist_judge(self):
+        print("执行用户存在判断")
+        var = login_page_tips["Ch_NoSuchUserTip"]
+        print(var)
+        try:
+            user_exist = self.driver.find_element(by='xpath', value=var)
+            txt = user_exist.get_attribute("content-desc")
+            print(txt)
+            if user_exist:
+                print("用户不存在")
+                return txt
+            else:
+                print("等待验证码")
+        except NoSuchElementException:
+            print(self.driver.contexts)
 
     # Code for email login
 
@@ -246,12 +264,12 @@ class LoginPage:
                 # 输入手机号
                 self.driver.find_element(by='xpath', value=self.element.En_PhoneNumber).send_keys(self.phone)
                 # 获取验证码
-                self.driver.find_element(by='xpath', value=self.element.En_Get_Code).click()
+                self.driver.find_element(by='xpath', value=self.element.En_CodeLogin_GetCode).click()
                 verify_code = sms.getCode()
                 if verify_code:
                     self.verify_code = verify_code
                     # 输入验证码
-                    code = self.driver.find_element(by='xpath', value=self.element.En_Code_Input)
+                    code = self.driver.find_element(by='xpath', value=self.element.En_CodeLogin_Code)
                     code.click()
                     code.send_keys(self.verify_code)
                 else:
@@ -266,23 +284,24 @@ class LoginPage:
                 # 输入手机号
                 self.driver.find_element(by='xpath', value=self.element.En_PhoneNumber).send_keys(self.phone)
                 # 获取验证码
-                self.driver.find_element(by='xpath', value=self.element.En_Get_Code).click()
+                self.driver.find_element(by='xpath', value=self.element.En_CodeLogin_GetCode).click()
                 verify_code = sms.getCode()
                 if verify_code:
                     self.verify_code = verify_code
                     # 输入验证码
-                    code = self.driver.find_element(by='xpath', value=self.element.En_Code_Input)
+                    code = self.driver.find_element(by='xpath', value=self.element.En_CodeLogin_Code)
                     code.click()
                     code.send_keys(self.verify_code)
                 else:
                     print("验证码获取失败")
                 self.driver.hide_keyboard()
         elif language == "Chinese":
+            print("进入中文版登录")
             # 点击验证码登录
             self.driver.find_element(by='xpath', value=self.element.Ch_Code_Login).click()
             # 获取地域信息
             currentRegion = self.get_current_region(language)
-            print(currentRegion)
+            print(f"当前地区：{currentRegion}")
             if currentRegion == "美国":
                 # 选择手机区号
                 self.driver.find_element(by='xpath', value=self.element.Ch_Area_List).click()
@@ -306,25 +325,37 @@ class LoginPage:
                 self.driver.hide_keyboard()
             elif currentRegion == "中国大陆":
                 # 选择手机区号
+                print("开始选择手机区号")
                 self.driver.find_element(by='xpath', value=self.element.Ch_Area_List).click()
                 self.driver.find_element(by='xpath', value=self.element.Ch_Area_Code).send_keys('中国大陆')
                 self.driver.implicitly_wait(1)
                 self.driver.find_element(by='xpath', value=self.element.Ch_Area_Code_86).click()
+                print("手机区号已选择")
                 # 输入手机号
                 self.driver.find_element(by='xpath', value=self.element.Ch_PhoneNumber).send_keys(self.phone)
                 # 获取验证码
+                print("开始获取验证码")
                 self.driver.find_element(by='xpath', value=self.element.Ch_CodeLogin_Get).click()
-                verify_code = sms.getCode()
-                if verify_code:
-                    self.verify_code = verify_code
-                    # 输入验证码
-                    code = self.driver.find_element(by='xpath', value=self.element.Ch_CodeLogin_CodeInput)
-                    code.click()
-                    code.send_keys(self.verify_code)
+                self.driver.implicitly_wait(1)
+                # 判断是否存在用户
+                rt = self.user_exist_judge()
+                if rt:
+                    print("即将退出程序")
+                    sys.exit()
                 else:
-                    print("验证码获取失败")
-                self.driver.hide_keyboard()
+                    print("已发送验证码")
+                    verify_code = sms.getCode()
+                    if verify_code:
+                        self.verify_code = verify_code
+                        # 输入验证码
+                        code = self.driver.find_element(by='xpath', value=self.element.Ch_CodeLogin_CodeInput)
+                        code.click()
+                        code.send_keys(self.verify_code)
+                    else:
+                        print("验证码获取失败")
+                    self.driver.hide_keyboard()
         else:
             print("Please enter the correct language")
         # 根据传入的参数来决定是否勾选用户协议
+        print("开始校验用户协议")
         self.userAgreementJudge(language, *agreement_verifycode)

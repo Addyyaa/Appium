@@ -10,7 +10,7 @@ driver = get_driver()
 version = VersionSelection(driver)
 version.version_selection(version=versions, language=Language)
 # 初始化一些变量
-Config.Config.phone = "15250996930"
+Config.Config.phone = "15250996938"
 login = LoginPage(driver)
 if Agreement_verifycode[0]:
     login.login(Login_type, Language, Agreement_verifycode)
