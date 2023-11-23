@@ -1,9 +1,13 @@
 from Element import Element_version
+
+
 class VersionSelection:
     # 元素实例
     element = Element_version()
+
     def __init__(self, driver):
         self.driver = driver
+
     def version_selection(self, version="Chinese", language="Chinese"):
         self.driver.implicitly_wait(10)
         judege = self.driver.find_element(by='id', value=self.element.judege)
@@ -11,6 +15,7 @@ class VersionSelection:
         if judege.text == "同意并接受":
             print('判断通过')
             judege.click()
+            print('已同意')
             self.driver.implicitly_wait(15)
             self.driver.find_element(by='xpath', value=self.element.area1).click()
             if version == "Chinese" and language == "Chinese":
@@ -74,7 +79,7 @@ class VersionSelection:
                 self.driver.find_element(by='xpath', value=self.element.En_China).click()
                 print("地域选择China")
                 # 弹出语言选项框
-                self.driver.find_element(by ='xpath', value=self.element.En_Language).click()
+                self.driver.find_element(by='xpath', value=self.element.En_Language).click()
                 self.driver.implicitly_wait(10)
                 # 选择英文
                 self.driver.find_element(by='xpath', value=self.element.En_English).click()
