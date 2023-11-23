@@ -1,7 +1,7 @@
 import Init
 from Element import Element_version
 from sms import SMS
-
+from Config import Config
 
 class LoginPage:
     element = Element_version()
@@ -10,15 +10,14 @@ class LoginPage:
         self.driver = driver
         #  TODO 将driver变为传递进来的参数
         self.driver.implicitly_wait(10)
+        self.email = Config.email
+        self.email_password = Config.email_password
+        self.phone = Config.phone
+        self.phone_password = Config.phone_password
+        self.verify_code = Config.verify_code
 
-    # 账号及密码
-    email = "2698567570@qq.com"
-    email_password = "sf19960408"
-    phone = "15250996938"
-    phone_password = "sf123123"
-    verivyCode = "11111"
 
-    def login(self, loginType="email", language=None, *agreement):
+    def login(self, loginType="email", language=None, *agreement_verifycode):
         login_methods = {
             "email": self.login_email,
             "phone": self.login_mobile,
@@ -27,14 +26,14 @@ class LoginPage:
 
         login_method = login_methods.get(loginType)
         if login_method:
-            login_method(language, *agreement)
+            login_method(language, *agreement_verifycode)
         else:
             print("Invalid login type")
 
     # 判断用户协议是否被勾选，还需补充中英文版本的判断
-    def userAgreementJudge(self, language, *agreement):
+    def userAgreementJudge(self, language, *agreement_verifycode):
         userAgreement = None
-        if agreement:
+        if agreement_verifycode[0]:
             if language == "English":
                 print("检测到英文版本用户协议")
                 print(language)
@@ -70,7 +69,7 @@ class LoginPage:
         else:
             print("Please enter the correct language")
 
-    def login_email(self, language, *agreement):
+    def login_email(self, language, *agreement_verifycode):
         print("已选择邮箱登录")
         if language == "Chinese":
             # 点击邮箱登录
@@ -103,7 +102,7 @@ class LoginPage:
             self.driver.hide_keyboard()
             self.driver.implicitly_wait(10)
             # 根据是否传入agreement参数判断是否勾选用户协议
-            self.userAgreementJudge(language, *agreement)
+            self.userAgreementJudge(language, *agreement_verifycode)
 
     def get_current_region(self, language):
         if language == "English":
@@ -128,7 +127,7 @@ class LoginPage:
 
     # Code for email login
 
-    def login_mobile(self, language, *agreement):
+    def login_mobile(self, language, *agreement_verifycode):
         print("已选择手机登录")
         if language == "English":
             print("进入英文版登录")
@@ -227,9 +226,9 @@ class LoginPage:
         else:
             print("Please enter the correct language")
         # 根据传入的参数来决定是否勾选用户协议
-        self.userAgreementJudge(language, *agreement)
+        self.userAgreementJudge(language, *agreement_verifycode)
 
-    def login_code(self, language, *agreement):
+    def login_code(self, language, *agreement_verifycode):
         sms = SMS(self.driver)
         print("已选择验证码登录")
         if language == "English":
@@ -250,10 +249,11 @@ class LoginPage:
                 self.driver.find_element(by='xpath', value=self.element.En_Get_Code).click()
                 verify_code = sms.getCode()
                 if verify_code:
+                    self.verify_code = verify_code
                     # 输入验证码
                     code = self.driver.find_element(by='xpath', value=self.element.En_Code_Input)
                     code.click()
-                    code.send_keys(verify_code)
+                    code.send_keys(self.verify_code)
                 else:
                     print("验证码获取失败")
                 self.driver.hide_keyboard()
@@ -269,10 +269,11 @@ class LoginPage:
                 self.driver.find_element(by='xpath', value=self.element.En_Get_Code).click()
                 verify_code = sms.getCode()
                 if verify_code:
+                    self.verify_code = verify_code
                     # 输入验证码
                     code = self.driver.find_element(by='xpath', value=self.element.En_Code_Input)
                     code.click()
-                    code.send_keys(verify_code)
+                    code.send_keys(self.verify_code)
                 else:
                     print("验证码获取失败")
                 self.driver.hide_keyboard()
@@ -295,10 +296,11 @@ class LoginPage:
                 print("开始获取验证码")
                 verify_code = sms.getCode()
                 if verify_code:
+                    self.verify_code = verify_code
                     # 输入验证码
                     code = self.driver.find_element(by='xpath', value=self.element.Ch_CodeLogin_CodeInput)
                     code.click()
-                    code.send_keys(verify_code)
+                    code.send_keys(self.verify_code)
                 else:
                     print("验证码获取失败")
                 self.driver.hide_keyboard()
@@ -314,14 +316,15 @@ class LoginPage:
                 self.driver.find_element(by='xpath', value=self.element.Ch_CodeLogin_Get).click()
                 verify_code = sms.getCode()
                 if verify_code:
+                    self.verify_code = verify_code
                     # 输入验证码
                     code = self.driver.find_element(by='xpath', value=self.element.Ch_CodeLogin_CodeInput)
                     code.click()
-                    code.send_keys(verify_code)
+                    code.send_keys(self.verify_code)
                 else:
                     print("验证码获取失败")
                 self.driver.hide_keyboard()
         else:
             print("Please enter the correct language")
         # 根据传入的参数来决定是否勾选用户协议
-        self.userAgreementJudge(language, *agreement)
+        self.userAgreementJudge(language, *agreement_verifycode)

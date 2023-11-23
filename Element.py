@@ -35,10 +35,14 @@ class Element_version:
     # 英文版-确认
     En_Confirm = '//android.widget.TextView[@text="Confirm"]'
     # ---------------------------------------------------------------------------------------------登录界面-------------------------------------------------------------------
-    Ch_UserAgreement = '//android.widget.FrameLayout[@resource-id="android:id/content"]/android.widget.FrameLayout/android.widget.FrameLayout/' \
-                       'android.view.ViewGroup/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout[2]/android.widget.FrameLayout/android.widget.ImageView'
-    En_UserAgreement = '//android.widget.FrameLayout[@resource-id="android:id/content"]/android.widget.FrameLayout/android.widget.FrameLayout/' \
-                       'android.view.ViewGroup/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout[2]/android.widget.FrameLayout/android.widget.ImageView'
+    Ch_UserAgreement = '//android.widget.FrameLayout[@resource-id="android:id/content"]/android.widget.FrameLayout' \
+                       '/android.widget.FrameLayout/' \
+                       'android.view.ViewGroup/android.widget.FrameLayout/android.view.ViewGroup/android.widget' \
+                       '.FrameLayout/android.widget.FrameLayout[2]/android.widget.FrameLayout/android.widget.ImageView'
+    En_UserAgreement = '//android.widget.FrameLayout[@resource-id="android:id/content"]/android.widget.FrameLayout' \
+                       '/android.widget.FrameLayout/' \
+                       'android.view.ViewGroup/android.widget.FrameLayout/android.view.ViewGroup/android.widget' \
+                       '.FrameLayout/android.widget.FrameLayout[2]/android.widget.FrameLayout/android.widget.ImageView'
     # 中文版-手机登录
     Ch_Phone_Login = '//android.view.View[@content-desc="手机登录"]'
     # 中文版-邮箱登录
@@ -46,7 +50,7 @@ class Element_version:
     # 中文版-验证码
     Ch_Code_Login = '//android.view.View[@content-desc="验证码登录"]'
     # 中文版-区号
-    Ch_Area_List= '//android.view.View[@content-desc=""]'
+    Ch_Area_List = '//android.view.View[@content-desc=""]'
     # 中文版-区号搜索框
     Ch_Area_Code = '//android.widget.EditText[@text="搜索国家或地区名称"]'
     # 中文版-区号86
@@ -63,10 +67,13 @@ class Element_version:
     # 中文版-手机密码输入（需要先点击）
     Ch_Phone_Passswd = '//android.widget.EditText[@text="请填写密码"]'
     # 中文版-密码明文显示
-    Ch_Phone_Passswd_Show = '//android.widget.ScrollView/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[3]' \
-                            '/android.widget.FrameLayout[1]/android.widget.FrameLayout[2]/android.widget.FrameLayout/android.widget.FrameLayout[2]/android.widget.ImageView'
+    Ch_Phone_Passswd_Show = '//android.widget.ScrollView/android.widget.FrameLayout/android.widget.FrameLayout' \
+                            '/android.widget.FrameLayout[3]' \
+                            '/android.widget.FrameLayout[1]/android.widget.FrameLayout[' \
+                            '2]/android.widget.FrameLayout/android.widget.FrameLayout[2]/android.widget.ImageView'
     # 中文版-密码密文清除按钮
-    Ch_Phone_Passswd_Clear = '//android.widget.ScrollView/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[3]' \
+    Ch_Phone_Passswd_Clear = '//android.widget.ScrollView/android.widget.FrameLayout/android.widget.FrameLayout' \
+                             '/android.widget.FrameLayout[3]' \
                              '/android.widget.FrameLayout[1]/android.widget.FrameLayout[2]/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.widget.ImageView'
     # 中文版-记住密码
     Ch_Remember = '//android.widget.ScrollView/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[3]' \
@@ -106,7 +113,7 @@ class Element_version:
                           '/android.widget.FrameLayout[2]/android.widget.FrameLayout/android.widget.FrameLayout[2]/android.widget.ImageView'
     # 中文版-邮箱密码清除按钮
     Ch_Email_PasswdClear = '//android.widget.ScrollView/android.widget.FrameLayout/android.widget.FrameLayout/android' \
-                      '.widget.FrameLayout[3]/android.widget.FrameLayout[1]/android.widget.FrameLayout[2]/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.widget.ImageView'
+                           '.widget.FrameLayout[3]/android.widget.FrameLayout[1]/android.widget.FrameLayout[2]/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.widget.ImageView'
     # 中文版-验证码登录手机号输入
     Ch_CodeLogin_Number = '//android.widget.EditText[@text="请输入手机号码"]'
     # 中文版-获取验证码
@@ -201,36 +208,12 @@ class Element_version:
     Ch_Email_Register_Passwd = '(//android.view.View[@resource-id="input"])[3]/android.view.View/android.widget.EditText'
     Ch_Email_Register_Passwd_AfterInput = '(//android.view.View[@resource-id="input"])[3]/android.view.View/child::*[1]'
     Ch_Email_Register_ConfirmPasswd = '(//android.view.View[@resource-id="input"])[4]/android.view.View/android.widget.EditText'
-    Ch_Email_Register_ConfirmPasswd_AfterInput = '(//android.view.View[@resource-id="input"])[4]/android.view.View/child::*[1]'
+    Ch_Email_Register_ConfirmPasswd_AfterInput = '(//android.view.View[@resource-id="input"])[' \
+                                                 '4]/android.view.View/child::*[1]'
     Ch_Email_Register_GetCode = '//android.widget.TextView[@text="发送验证码"]'
-    Ch_Email_Register_CodeInput = '(//android.view.View[@resource-id="input"])[5]/android.view.View/android.widget.EditText'
+    Ch_Email_Register_CodeInput = '(//android.view.View[@resource-id="input"])[' \
+                                  '5]/android.view.View/android.widget.EditText'
     # 此元素无法通过sendkeys输入，需要通过虚拟键盘
     Ch_Email_RegisterButton = '//android.widget.TextView[@text="注 册"]'
-    # 注册界面请输入邮箱提示
-    Ch_Email_Register_EmailInputTips = '//android.webkit.WebView[@text="pages/mine/reg/index[4]"]/android.view.View[1]/android.view.View/android.view.View/android.view.View/child::*[1]'
-    # 登陆界面手机号输入提示
-    Ch_Phone_Register_PhoneInputTips = '//android.widget.FrameLayout[@resource-id="android:id/content"]/android.widget.FrameLayout/android.widget.FrameLayout/' \
-                                       'android.view.ViewGroup/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout[2]/android.widget.FrameLayout[2]/android.widget.FrameLayout/android.widget.ImageView/child::*[1]'
-
-    #######################################################################登录页面提示#####################################################################
-    # 登陆界面手机密码输入提示
-    Ch_Phone_Login_PasswdInputTip = '//android.view.View[@content-desc="请填写密码"]'
-    # 中文版用户勾选提示
-    Ch_AgreementTip = '//android.view.View[@content-desc="请阅读并同意用户协议及隐私政策"]'
-    # 请输入正确的手机号提示
-    Ch_Phone_Login_CorrectPhoneTip = '//android.view.View[@content-desc="请输入正确的手机号码"]'
-    # 密码格式提示
-    Ch_PasswdFormatTip = '//android.view.View[@content-desc="密码由字母和数字组成，长度在6-12之间"]'
-    # 密码错误提示
-    Ch_PasswdErrorTip = '//android.view.View[@content-desc="账号或密码错误"]'
-    # 用户信息不存在
-    Ch_NoSuchUserTip = '//android.view.View[@content-desc="用户信息不存在，请确保用户信息及所选区域是否正确"]'
-    # 请输入邮箱提示
-    Ch_Email_Login_EmailInputTip = '//android.view.View[@content-desc="请输入邮箱账号"]'
-    # 请输入密码提示
-    Ch_Email_Login_PasswdInputTip = '//android.view.View[@content-desc="请填写密码"]'
-    # 请输入正确的邮箱提示
-    Ch_Email_Login_CorrectEmailTip = '//android.view.View[@content-desc="请输入正确的邮箱账号"]'
-
 
 
