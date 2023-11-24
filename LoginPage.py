@@ -11,7 +11,6 @@ class LoginPage:
 
     def __init__(self, driver):
         self.driver = driver
-        #  TODO 将driver变为传递进来的参数
         self.driver.implicitly_wait(10)
         self.email = Config.email
         self.email_password = Config.email_password
@@ -20,7 +19,7 @@ class LoginPage:
         self.verify_code = Config.verify_code
 
 
-    def login(self, loginType="email", language=None, *agreement_verifycode):
+    def login(self,getCode_fillCode, loginType="email", language=None, *agreement_verifycode):
         login_methods = {
             "email": self.login_email,
             "phone": self.login_mobile,
@@ -28,7 +27,9 @@ class LoginPage:
         }
 
         login_method = login_methods.get(loginType)
-        if login_method:
+        if login_method == self.login_code:
+            login_method(language, getCode_fillCode, *agreement_verifycode)
+        elif login_method == self.login_email or login_method == self.login_mobile:
             login_method(language, *agreement_verifycode)
         else:
             print("Invalid login type")
@@ -246,7 +247,7 @@ class LoginPage:
         # 根据传入的参数来决定是否勾选用户协议
         self.userAgreementJudge(language, *agreement_verifycode)
 
-    def login_code(self, language, *agreement_verifycode):
+    def login_code(self, language, getCode_fillCode, *agreement_verifycode):
         sms = SMS(self.driver)
         print("已选择验证码登录")
         if language == "English":
@@ -263,16 +264,14 @@ class LoginPage:
                 self.driver.find_element(by='xpath', value=self.element.En_AreCode_1).click()
                 # 输入手机号
                 self.driver.find_element(by='xpath', value=self.element.En_PhoneNumber).send_keys(self.phone)
-                # 获取验证码
-                self.driver.find_element(by='xpath', value=self.element.En_CodeLogin_GetCode).click()
                 self.driver.implicitly_wait(1)
+                self.driver.find_element(by='xpath', value=self.element.En_CodeLogin_GetCode).click()
                 # 判断是否存在用户
                 if rt:
                     print("即将退出程序")
                     sys.exit()
                 else:
-                    print("已发送验证码")
-                    verify_code = sms.getCode()
+                    verify_code = sms.getCode(language, getCode_fillCode)
                     if verify_code:
                         self.verify_code = verify_code
                         # 输入验证码
@@ -299,7 +298,7 @@ class LoginPage:
                     print("即将退出程序")
                     sys.exit()
                 else:
-                    verify_code = sms.getCode()
+                    verify_code = sms.getCode(language, getCode_fillCode)
                     if verify_code:
                         self.verify_code = verify_code
                         # 输入验证码
@@ -334,7 +333,7 @@ class LoginPage:
                     print("即将退出程序")
                     sys.exit()
                 else:
-                    verify_code = sms.getCode()
+                    verify_code = sms.getCode(language, getCode_fillCode)
                     if verify_code:
                         self.verify_code = verify_code
                         # 输入验证码
@@ -354,9 +353,6 @@ class LoginPage:
                 print("手机区号已选择")
                 # 输入手机号
                 self.driver.find_element(by='xpath', value=self.element.Ch_PhoneNumber).send_keys(self.phone)
-                # 获取验证码
-                print("开始获取验证码")
-                self.driver.find_element(by='xpath', value=self.element.Ch_CodeLogin_Get).click()
                 self.driver.implicitly_wait(1)
                 # 判断是否存在用户
                 rt = self.user_exist_judge()
@@ -364,8 +360,7 @@ class LoginPage:
                     print("即将退出程序")
                     sys.exit()
                 else:
-                    print("已发送验证码")
-                    verify_code = sms.getCode()
+                    verify_code = sms.getCode(language, getCode_fillCode)
                     if verify_code:
                         self.verify_code = verify_code
                         # 输入验证码
