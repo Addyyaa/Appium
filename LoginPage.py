@@ -265,16 +265,23 @@ class LoginPage:
                 self.driver.find_element(by='xpath', value=self.element.En_PhoneNumber).send_keys(self.phone)
                 # 获取验证码
                 self.driver.find_element(by='xpath', value=self.element.En_CodeLogin_GetCode).click()
-                verify_code = sms.getCode()
-                if verify_code:
-                    self.verify_code = verify_code
-                    # 输入验证码
-                    code = self.driver.find_element(by='xpath', value=self.element.En_CodeLogin_Code)
-                    code.click()
-                    code.send_keys(self.verify_code)
+                self.driver.implicitly_wait(1)
+                # 判断是否存在用户
+                if rt:
+                    print("即将退出程序")
+                    sys.exit()
                 else:
-                    print("验证码获取失败")
-                self.driver.hide_keyboard()
+                    print("已发送验证码")
+                    verify_code = sms.getCode()
+                    if verify_code:
+                        self.verify_code = verify_code
+                        # 输入验证码
+                        code = self.driver.find_element(by='xpath', value=self.element.En_CodeLogin_Code)
+                        code.click()
+                        code.send_keys(self.verify_code)
+                    else:
+                        print("验证码获取失败")
+                    self.driver.hide_keyboard()
             elif currentRegion == "China":
                 # 选择手机区号
                 self.driver.find_element(by='xpath', value=self.element.En_AreCode_List).click()
@@ -285,16 +292,23 @@ class LoginPage:
                 self.driver.find_element(by='xpath', value=self.element.En_PhoneNumber).send_keys(self.phone)
                 # 获取验证码
                 self.driver.find_element(by='xpath', value=self.element.En_CodeLogin_GetCode).click()
-                verify_code = sms.getCode()
-                if verify_code:
-                    self.verify_code = verify_code
-                    # 输入验证码
-                    code = self.driver.find_element(by='xpath', value=self.element.En_CodeLogin_Code)
-                    code.click()
-                    code.send_keys(self.verify_code)
+                self.driver.implicitly_wait(1)
+                # 判断是否存在用户
+                rt = self.user_exist_judge()
+                if rt:
+                    print("即将退出程序")
+                    sys.exit()
                 else:
-                    print("验证码获取失败")
-                self.driver.hide_keyboard()
+                    verify_code = sms.getCode()
+                    if verify_code:
+                        self.verify_code = verify_code
+                        # 输入验证码
+                        code = self.driver.find_element(by='xpath', value=self.element.En_CodeLogin_Code)
+                        code.click()
+                        code.send_keys(self.verify_code)
+                    else:
+                        print("验证码获取失败")
+                    self.driver.hide_keyboard()
         elif language == "Chinese":
             print("进入中文版登录")
             # 点击验证码登录
@@ -313,16 +327,23 @@ class LoginPage:
                 # 获取验证码
                 self.driver.find_element(by='xpath', value=self.element.Ch_CodeLogin_Get).click()
                 print("开始获取验证码")
-                verify_code = sms.getCode()
-                if verify_code:
-                    self.verify_code = verify_code
-                    # 输入验证码
-                    code = self.driver.find_element(by='xpath', value=self.element.Ch_CodeLogin_CodeInput)
-                    code.click()
-                    code.send_keys(self.verify_code)
+                self.driver.implicitly_wait(1)
+                # 判断是否存在用户
+                rt = self.user_exist_judge()
+                if rt:
+                    print("即将退出程序")
+                    sys.exit()
                 else:
-                    print("验证码获取失败")
-                self.driver.hide_keyboard()
+                    verify_code = sms.getCode()
+                    if verify_code:
+                        self.verify_code = verify_code
+                        # 输入验证码
+                        code = self.driver.find_element(by='xpath', value=self.element.Ch_CodeLogin_CodeInput)
+                        code.click()
+                        code.send_keys(self.verify_code)
+                    else:
+                        print("验证码获取失败")
+                    self.driver.hide_keyboard()
             elif currentRegion == "中国大陆":
                 # 选择手机区号
                 print("开始选择手机区号")
