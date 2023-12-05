@@ -89,6 +89,7 @@ class SMS:
             user_exist = self.driver.find_element(by='xpath', value=var)
             txt = user_exist.get_attribute("content-desc")
             print(txt)
+            print("开始判断用户存在元素")
             if user_exist:
                 print("用户不存在")
                 return txt
@@ -96,6 +97,7 @@ class SMS:
                 print("等待验证码")
         except NoSuchElementException:
             print(self.driver.contexts)
+            print("NoSuchElement")
 
 
 

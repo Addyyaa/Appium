@@ -354,24 +354,25 @@ class LoginPage:
                 # 输入手机号
                 self.driver.find_element(by='xpath', value=self.element.Ch_PhoneNumber).send_keys(self.phone)
                 self.driver.implicitly_wait(1)
-                # 判断是否存在用户
-                rt = self.user_exist_judge()
-                if rt:
-                    print("即将退出程序")
-                    sys.exit()
-                else:
-                    verify_code = sms.getCode(language, getCode_fillCode)
-                    if verify_code:
-                        self.verify_code = verify_code
-                        # 输入验证码
-                        code = self.driver.find_element(by='xpath', value=self.element.Ch_CodeLogin_CodeInput)
-                        code.click()
-                        code.send_keys(self.verify_code)
-                    else:
-                        print("验证码获取失败")
-                    self.driver.hide_keyboard()
-        else:
-            print("Please enter the correct language")
-        # 根据传入的参数来决定是否勾选用户协议
+        #         # 判断是否存在用户
+        #         rt = self.user_exist_judge()
+        #         if rt:
+        #             print("即将退出程序")
+        #             sys.exit()
+        #         else:
+        #             verify_code = sms.getCode(language, getCode_fillCode)
+        #             if verify_code:
+        #                 self.verify_code = verify_code
+        #                 # 输入验证码
+        #                 code = self.driver.find_element(by='xpath', value=self.element.Ch_CodeLogin_CodeInput)
+        #                 code.click()
+        #                 code.send_keys(self.verify_code)
+        #             else:
+        #                 print("验证码获取失败")
+        #             self.driver.hide_keyboard()
+        # else:
+        #     print("Please enter the correct language")
+        # # 根据传入的参数来决定是否勾选用户协议
+        sms.getCode(language, getCode_fillCode)
         print("开始校验用户协议")
         self.userAgreementJudge(language, *agreement_verifycode)
