@@ -5,8 +5,8 @@ import Config
 Language = 'Chinese'
 versions = 'Chinese'
 Agreement_verifycode = (True, True)
-# 决定是否获取验证码，是否填写验证码
-getCode_fillCode = (True, True)
+# 决定是否获取验证码，是否填写验证码,第二个参数为non-custom为使用短信验证码
+getCode_fillCode = (True, "1234")
 
 Login_type = "code"
 driver = get_driver()

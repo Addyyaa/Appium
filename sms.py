@@ -42,14 +42,26 @@ class SMS:
                     print("即将退出程序")
                     sys.exit()
                 else:
-                    self.readCode()
+                    code = self.readCode()
+                    if getCode_fillCode[1] is None:
+                        print("验证码为空")
+                        code = ""
+                    elif getCode_fillCode[1] == "non-custom":
+                        print(f"验证码为:{code}")
+                    else:
+                        code = getCode_fillCode[1]
+                        print(f"验证码为{code}")
+                    # 填写验证码
+                    self.driver.find_element(by='xpath', value=self.element.Ch_CodeLogin_CodeInput).send_keys(code)
             else:
                 print("未传入language参数!")
-            # 开始从通知栏获取短信验证码
-            print("即将进入 readCode 进程")
-            self.readCode()
+        # TODO 不获取验证码的情况下的逻辑处理
         elif not getCode_fillCode[0]:
-            return None
+            # 不填写验证码直接点击登录
+            pass
+            # 填写错误的验证码
+            pass
+
     def readCode(self):
         print("进入 readCode 进程")
         wait = WebDriverWait(self.driver, 30)
@@ -62,7 +74,7 @@ class SMS:
             if code:
                 print("验证码获取成功")
                 print(code.text)
-                pattern = r"验证码为：(\d+)"
+                pattern = r"证码为：(\d+)"
                 verify_code = re.search(pattern, code.text).group(1)
                 print(f"验证码为:{verify_code}")
                 if verify_code:
@@ -74,7 +86,6 @@ class SMS:
                     return str(verify_code)
                 else:
                     print("验证码获取失败，未能正则匹配到验证码")
-                print("下一步操作关闭通知栏")
             else:
                 print("验证码获取失败，我找到对应元素")
         except TimeoutError:
