@@ -30,7 +30,18 @@ class SMS:
                     sys.exit()
                 else:
                     print("即将进入 readCode 进程")
-                    self.readCode()
+                    code = self.readCode()
+
+                    if getCode_fillCode[1] is None:
+                        print("验证码为空")
+                        code = ""
+                    elif getCode_fillCode[1] == "non-custom":
+                        print(f"验证码为:{code}")
+                    else:
+                        code = getCode_fillCode[1]
+                        # 填写验证码
+                    self.driver.find_element(by='xpath', value=self.element.En_CodeLogin_Code).send_keys(code)
+                    print(f"填写的验证吗为{code}")
             elif language == "Chinese":
                 print("当前语言为中文")
                 self.driver.find_element(by='xpath', value=self.element.Ch_CodeLogin_Get).click()
@@ -50,9 +61,9 @@ class SMS:
                         print(f"验证码为:{code}")
                     else:
                         code = getCode_fillCode[1]
-                        print(f"验证码为{code}")
                     # 填写验证码
                     self.driver.find_element(by='xpath', value=self.element.Ch_CodeLogin_CodeInput).send_keys(code)
+                    print(f"填写的验证吗为{code}")
             else:
                 print("未传入language参数!")
         # TODO 不获取验证码的情况下的逻辑处理
@@ -102,6 +113,9 @@ class SMS:
             print(txt)
             print("开始判断用户存在元素")
             if user_exist:
+
+
+
                 print("用户不存在")
                 return txt
             else:

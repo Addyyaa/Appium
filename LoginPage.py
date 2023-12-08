@@ -251,63 +251,34 @@ class LoginPage:
         sms = SMS(self.driver)
         print("已选择验证码登录")
         if language == "English":
+            print("进入英文版本登录")
             # 点击验证码登录
             self.driver.find_element(by='xpath', value=self.element.En_Code_Login).click()
             # 获取地域信息
             currentRegion = self.get_current_region(language)
-            print(currentRegion)
+            print(f"当前地域：{currentRegion}")
             if currentRegion == "United States":
+                print("开始选择手机区号")
                 # 选择手机区号
                 self.driver.find_element(by='xpath', value=self.element.En_AreCode_List).click()
                 self.driver.find_element(by='xpath', value=self.element.En_AreCode_Input).send_keys('USA')
                 self.driver.implicitly_wait(1)
                 self.driver.find_element(by='xpath', value=self.element.En_AreCode_1).click()
+                print("手机区号已选择")
                 # 输入手机号
                 self.driver.find_element(by='xpath', value=self.element.En_PhoneNumber).send_keys(self.phone)
                 self.driver.implicitly_wait(1)
-                self.driver.find_element(by='xpath', value=self.element.En_CodeLogin_GetCode).click()
-                # 判断是否存在用户
-                if rt:
-                    print("即将退出程序")
-                    sys.exit()
-                else:
-                    verify_code = sms.getCode(language, getCode_fillCode)
-                    if verify_code:
-                        self.verify_code = verify_code
-                        # 输入验证码
-                        code = self.driver.find_element(by='xpath', value=self.element.En_CodeLogin_Code)
-                        code.click()
-                        code.send_keys(self.verify_code)
-                    else:
-                        print("验证码获取失败")
-                    self.driver.hide_keyboard()
             elif currentRegion == "China":
+                print("开始选择手机区号")
                 # 选择手机区号
                 self.driver.find_element(by='xpath', value=self.element.En_AreCode_List).click()
                 self.driver.find_element(by='xpath', value=self.element.En_AreCode_Input).send_keys('china')
                 self.driver.implicitly_wait(1)
                 self.driver.find_element(by='xpath', value=self.element.En_AreCode_86).click()
+                print("手机区号已选择")
                 # 输入手机号
                 self.driver.find_element(by='xpath', value=self.element.En_PhoneNumber).send_keys(self.phone)
-                # 获取验证码
-                self.driver.find_element(by='xpath', value=self.element.En_CodeLogin_GetCode).click()
                 self.driver.implicitly_wait(1)
-                # 判断是否存在用户
-                rt = self.user_exist_judge()
-                if rt:
-                    print("即将退出程序")
-                    sys.exit()
-                else:
-                    verify_code = sms.getCode(language, getCode_fillCode)
-                    if verify_code:
-                        self.verify_code = verify_code
-                        # 输入验证码
-                        code = self.driver.find_element(by='xpath', value=self.element.En_CodeLogin_Code)
-                        code.click()
-                        code.send_keys(self.verify_code)
-                    else:
-                        print("验证码获取失败")
-                    self.driver.hide_keyboard()
         elif language == "Chinese":
             print("进入中文版登录")
             # 点击验证码登录
@@ -321,28 +292,10 @@ class LoginPage:
                 self.driver.find_element(by='xpath', value=self.element.Ch_Area_Code).send_keys('美国')
                 self.driver.implicitly_wait(1)
                 self.driver.find_element(by='xpath', value=self.element.Ch_Area_Code_1).click()
+                print("手机区号已选择")
                 # 输入手机号
                 self.driver.find_element(by='xpath', value=self.element.Ch_PhoneNumber).send_keys(self.phone)
-                # 获取验证码
-                self.driver.find_element(by='xpath', value=self.element.Ch_CodeLogin_Get).click()
-                print("开始获取验证码")
                 self.driver.implicitly_wait(1)
-                # 判断是否存在用户
-                rt = self.user_exist_judge()
-                if rt:
-                    print("即将退出程序")
-                    sys.exit()
-                else:
-                    verify_code = sms.getCode(language, getCode_fillCode)
-                    if verify_code:
-                        self.verify_code = verify_code
-                        # 输入验证码
-                        code = self.driver.find_element(by='xpath', value=self.element.Ch_CodeLogin_CodeInput)
-                        code.click()
-                        code.send_keys(self.verify_code)
-                    else:
-                        print("验证码获取失败")
-                    self.driver.hide_keyboard()
             elif currentRegion == "中国大陆":
                 # 选择手机区号
                 print("开始选择手机区号")
@@ -354,25 +307,7 @@ class LoginPage:
                 # 输入手机号
                 self.driver.find_element(by='xpath', value=self.element.Ch_PhoneNumber).send_keys(self.phone)
                 self.driver.implicitly_wait(1)
-        #         # 判断是否存在用户
-        #         rt = self.user_exist_judge()
-        #         if rt:
-        #             print("即将退出程序")
-        #             sys.exit()
-        #         else:
-        #             verify_code = sms.getCode(language, getCode_fillCode)
-        #             if verify_code:
-        #                 self.verify_code = verify_code
-        #                 # 输入验证码
-        #                 code = self.driver.find_element(by='xpath', value=self.element.Ch_CodeLogin_CodeInput)
-        #                 code.click()
-        #                 code.send_keys(self.verify_code)
-        #             else:
-        #                 print("验证码获取失败")
-        #             self.driver.hide_keyboard()
-        # else:
-        #     print("Please enter the correct language")
-        # # 根据传入的参数来决定是否勾选用户协议
         sms.getCode(language, getCode_fillCode)
+        # 根据传入的参数来决定是否勾选用户协议
         print("开始校验用户协议")
         self.userAgreementJudge(language, *agreement_verifycode)

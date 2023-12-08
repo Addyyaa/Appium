@@ -2,7 +2,7 @@ from Init import get_driver
 from VersionSelection import VersionSelection
 from LoginPage import LoginPage
 import Config
-Language = 'Chinese'
+Language = 'English'
 versions = 'Chinese'
 Agreement_verifycode = (True, True)
 # 决定是否获取验证码，是否填写验证码,第二个参数为non-custom为使用短信验证码
