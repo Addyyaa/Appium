@@ -6,3 +6,6 @@ class Config:
     phone_password = "sf123123"
     nick_name = "Addy"
     verify_code = "111111"
+    area_code = "86"
+    email_confirm_password = "sf19960408"
+    phone_confirm_password = "sf123123"
