@@ -187,8 +187,8 @@ class Element_version:
     Ch_Phone_Register = '//android.widget.TextView[@text="手机号注册"]'
     Ch_Email_Register = '//android.widget.TextView[@text="邮箱注册"]'
     Ch_Phone_Register_AreaCodeList = '//android.widget.TextView[@resource-id="country"]'
-    Ch_Phone_Register_AreaCode_Search = '//android.webkit.WebView[@text="pages/mine/reg/index[2]"]/android.view.View[5]/android.view.View/android.view.View/' \
-                                        'android.view.View/android.view.View[1]/android.view.View/android.view.View/android.view.View/android.widget.EditText'
+    Ch_Phone_Register_AreaCode_Search = '//android.webkit.WebView[@text="pages/mine/reg/index[2]"]/android.view.View[4]/android.view.View/android.view.View/android.view.View/android.view.View[1]/android.view.View/android.view.View/android.view.View/android.widget.EditText'
+    Ch_Phone_Register_86 = '//android.widget.TextView[@text="中国大陆(CN)"]'
     # 此元素无法通过sendkeys输入，需要通过虚拟键盘
     Ch_Phone_Register_PhoneNumber = '//android.view.View[@resource-id="phoneCode"]/android.view.View/android.widget.EditText'
     Ch_Phone_Register_Nickname = '(//android.view.View[@resource-id="input"])[1]/android.view.View/android.widget.EditText'
@@ -199,6 +199,9 @@ class Element_version:
     Ch_Phone_Register_ConfirmPasswd = '(//android.view.View[@resource-id="input"])[3]/android.view.View/child::*[2]'
     Ch_Phone_Register_ConfirmPasswd_AfterInput = '(//android.view.View[@resource-id="input"])[3]/android.view.View/child::*[2]'
     Ch_Phone_Register_Region = '//android.webkit.WebView[@text="pages/mine/reg/index[2]"]/android.view.View[8]'
+    Ch_Phone_Register_RegionChina = '//android.widget.TextView[@text="中国大陆"]'
+    Ch_Phone_Register_RegionUSA = '//android.widget.TextView[@text="美国"]'
+    Ch_Phone_Register_RegionCancel = '//android.widget.TextView[@text="取消"]'
     Ch_Phone_Register_GetCode = '//android.widget.TextView[@text="发送验证码"]'
     # 此元素无法通过sendkeys输入，需要通过虚拟键盘
     Ch_Phone_Register_CodeInput = '(//android.view.View[@resource-id="input"])[4]/android.view.View/android.widget.EditText'
