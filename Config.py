@@ -11,3 +11,4 @@ class Config:
     phone_confirm_password = "sf123123"
     area_code_searchtext = "中国大陆"
     country_code = "CN"
+    is_registered = False

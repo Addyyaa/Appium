@@ -81,7 +81,6 @@ class SMS:
         wait = WebDriverWait(self.driver, 30)
         self.logger.info("打开通知栏")
         self.driver.open_notifications()
-        self.logger.info("通知栏已经打开并清除已有通知,开始获取验证码")
         self.driver.implicitly_wait(1)
         try:
             code = wait.until(ec.visibility_of_element_located((By.XPATH, ElementSMS.sms_code)))

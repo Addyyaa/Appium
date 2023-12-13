@@ -1,3 +1,7 @@
+import re
+
+import selenium.common.exceptions
+
 import Init
 import Element
 import ElementTips
@@ -11,6 +15,7 @@ from time import sleep
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 import phonenumbers
+import ElementSMS
 
 class TestChineseRegisterPage:
     @pytest.fixture(scope="class", autouse=True)
@@ -20,6 +25,7 @@ class TestChineseRegisterPage:
         version.version_selection("Chinese", "Chinese")
         element = Element.Element_version
         tips_element = ElementTips.register_page_tips
+        is_registered = Config.Config.is_registered
         # 账号及密码
         email = Config.Config.email
         email_password = Config.Config.email_password
@@ -40,6 +46,7 @@ class TestChineseRegisterPage:
             "driver": driver,
             "element": element,
             "tips_element": tips_element,
+            "is_registered": is_registered,
             "email": email,
             "email_password": email_password,
             "email_confirm_password": email_confirm_password,
@@ -68,11 +75,51 @@ class TestChineseRegisterPage:
             is_valid_number = phonenumbers.is_valid_number(parsed_number)
             return is_valid_number
         except phonenumbers.NumberParseException as e:
-            print(f"号码解析异常{e}")
+            logging.error(f"号码解析异常{e}")
             return False
 
+    # 从通知栏获取短信验证码
+    def get_sms_verify_code(self, setup):
+        wait = WebDriverWait(setup["driver"], 1)
+        setup["logger"].info("开始获取短信验证码")
+        setup["driver"].open_notifications()
+        setup["logger"].info("通知栏已打开")
+        setup["driver"].implicitly_wait(1)
+        try:
+            code = wait.until(ec.visibility_of_element_located((By.XPATH, ElementSMS.sms_code)))
+            if code:
+                setup["logger"].info("验证码获取成功")
+                setup["logger"].info(code.text)
+                pattern = r"证码为：(\d+)"
+                verify_code = re.search(pattern, code.text).group(1)
+                setup["logger"].info(f"验证码为:{verify_code}")
+                if verify_code:
+                    setup["logger"].info("即将关闭通知栏")
+                    # 清除通知栏内容防止下次获取验证码时读取到以前的验证码
+                    setup["driver"].find_element(by='id', value=ElementSMS.notification_clear).click()
+                    setup["logger"].info("通知栏已关闭")
+                    setup["driver"].implicitly_wait(1)
+                    return str(verify_code)
+                else:
+                    setup["logger"].error("验证码获取失败，未能正则匹配到验证码")
+            else:
+                setup["logger"].error("验证码获取失败，未找到对应元素")
+        except selenium.common.exceptions.TimeoutException as e:
+            logging.error(f"获取验证码超时")
+            setup["logger"].error("TimeoutError: %s", e)
+
+    # 虚拟键盘输入(数字)
+    def virtural_keyboard_input(self, setup, data):
+        for digit in data:
+            digit = int(digit)
+            key_code = digit + 7  # 转换成对应的键码
+            setup["driver"].press_keycode(key_code)
+
+
+
+
     # 中文国内手机注册流程
-    def chlanguage_chregion_phone_regist(self, setup, get_verify_code=True):
+    def chlanguage_chregion_phone_regist(self, setup, get_verify_code=True, read_sms_code=True,):
         wait = WebDriverWait(setup["driver"], 5)
         setup["logger"] = logging.getLogger(__name__)
         setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_AreaCodeList).click()
@@ -94,10 +141,7 @@ class TestChineseRegisterPage:
         setup["driver"].implicitly_wait(1)
         setup["logger"].info("已点击手机号输入框")
         # 由于文本框不支持sendkeys，所以使用虚拟键盘输入
-        for digit in setup["phone"]:
-            digit = int(digit)
-            key_code = digit + 7  # 转换成对应的键码
-            setup["driver"].press_keycode(key_code)
+        self.virtural_keyboard_input(setup, data=setup["phone"])
         setup["logger"].info("已输入手机号")
         setup["driver"].hide_keyboard()
         setup["logger"].info("已关闭虚拟键盘")
@@ -116,33 +160,50 @@ class TestChineseRegisterPage:
             # 点击发送验证码
             setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_GetCode).click()
             setup["logger"].info("已点击获取验证码")
-            print("即将获取提示元素")
-            print(setup["tips_element"]["Ch_sendCodeTip"])
+            logging.info("即将获取提示元素")
+            logging.info(setup["tips_element"]["Ch_sendCodeTip"])
             code_sent = wait.until(ec.visibility_of_element_located((By.XPATH, setup["tips_element"]["Ch_sendCodeTip"])))
             tip_text = code_sent.text
-            print(tip_text)
+            logging.info(tip_text)
             if setup["phone"] == "":
-                print("请输入手机号")
+                logging.info("请输入手机号")
                 excepted_result = "请输入手机号"
             else:
                 is_valid = self.phone_format_check(setup["phone"], setup["country_code"])
-                print(is_valid)
+                logging.info(is_valid)
                 if is_valid:
-                    excepted_result = "验证码已发送"
-                    print("验证码已发送")
+                    if setup["is_registered"]:
+                        excepted_result = "手机号或邮箱已存在"
+                        logging.info("手机号或邮箱已存在")
+                    else:
+                        excepted_result = "验证码已发送"
+                        logging.info("验证码已发送")
                 else:
-                    excepted_result = "请输入正确的手机号"
-                    print("请输入正确的手机号")
+                    excepted_result = "请输入正确的手机号码"
+                    logging.info("请输入正确的手机号")
+            logging.info("开始断言")
             assert tip_text == excepted_result, "提示内容不正确"
-            # 需要从通知栏获取验证码
-            # setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_CodeInput).send_keys(setup[
-            #                                                                                             "verify_code"])
+            logging.info("断言已完成")
+            # 根据参数判断是否要读取短信验证码
+            if read_sms_code:
+                # 需要从通知栏获取验证码
+                logging.info("开始读取短信验证码")
+                verify_code = self.get_sms_verify_code(setup)
+                logging.info(f"短信验证码读取完成，验证码为：{verify_code}")
+                # 如果用户想要使用自定义的验证码，则重新赋值便可
+                setup["verify_code"] = verify_code
+            logging.info("开始填写验证码")
+            setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_CodeInput).click()
+            self.virtural_keyboard_input(setup, data=setup["verify_code"])
+            logging.info("已输入获取的短信验证码")
         else:
-            pass
+            setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_CodeInput).click()
+            self.virtural_keyboard_input(setup, data=setup["verify_code"])
+            logging.info("未获取短信验证码但已输入自定义验证码")
     # 用例1：正确输入所有信息
     def test_chlanguage_chregion_phone_regist(self, setup):
-        setup["phone"] = "15250996930"
-        self.chlanguage_chregion_phone_regist(setup)
+        setup["phone"] = "15250996938"
+        self.chlanguage_chregion_phone_regist(setup, read_sms_code=True)
 
 
 
@@ -150,6 +211,6 @@ class TestChineseRegisterPage:
 
 # class TestEnglishRegisterPage:
 #     def __init__(self):
-#         self.driver = Init.get_driver()
-#         self.version = VersionSelection.VersionSelection(self.driver)
+#         setup["driver"] = Init.get_driver()
+#         self.version = VersionSelection.VersionSelection(setup["driver"])
 #         self.version.version_selection("Chinese", "English")
