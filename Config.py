@@ -10,3 +10,4 @@ class Config:
     email_confirm_password = "sf19960408"
     phone_confirm_password = "sf123123"
     area_code_searchtext = "中国大陆"
+    country_code = "CN"

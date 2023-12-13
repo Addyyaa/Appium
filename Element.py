@@ -193,7 +193,9 @@ class Element_version:
     Ch_Phone_Register_PhoneNumber = '//android.view.View[@resource-id="phoneCode"]/android.view.View/android.widget.EditText'
     Ch_Phone_Register_Nickname = '(//android.view.View[@resource-id="input"])[1]/android.view.View/android.widget.EditText'
     # 密码输入元素输入后元素会消失
-    Ch_Phone_Register_Passwd = '(//android.view.View[@resource-id="input"])[2]/android.view.View/child::*[1]'
+    Ch_Phone_Register_Passwd = '(//android.view.View[@resource-id="input"])[' \
+                               '2]/android.view.View/android.widget.EditText | //android.widget.EditText[' \
+                               'contains(@text, "•")]'
     # 密码输入后的密码元素
     Ch_Phone_Register_Passwd_AfterInput = '(//android.view.View[@resource-id="input"])[2]/android.view.View/child::*[1]'
     Ch_Phone_Register_ConfirmPasswd = '(//android.view.View[@resource-id="input"])[3]/android.view.View/child::*[2]'

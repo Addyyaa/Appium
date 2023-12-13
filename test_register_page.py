@@ -1,12 +1,16 @@
-
 import Init
 import Element
+import ElementTips
 import Config
 import pytest
 import logging
+from selenium.webdriver.common.by import By
 import VersionSelection
 from appium.webdriver.common.touch_action import TouchAction
 from time import sleep
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as ec
+import phonenumbers
 
 class TestChineseRegisterPage:
     @pytest.fixture(scope="class", autouse=True)
@@ -15,11 +19,14 @@ class TestChineseRegisterPage:
         version = VersionSelection.VersionSelection(driver)
         version.version_selection("Chinese", "Chinese")
         element = Element.Element_version
+        tips_element = ElementTips.register_page_tips
         # 账号及密码
         email = Config.Config.email
         email_password = Config.Config.email_password
         email_confirm_password = Config.Config.email_confirm_password
         phone = Config.Config.phone
+        # 国家码为CN、US等等
+        country_code = Config.Config.country_code
         phone_password = Config.Config.phone_password
         phone_confirm_password = Config.Config.phone_confirm_password
         nick_name = Config.Config.nick_name
@@ -32,10 +39,12 @@ class TestChineseRegisterPage:
         yield {
             "driver": driver,
             "element": element,
+            "tips_element": tips_element,
             "email": email,
             "email_password": email_password,
             "email_confirm_password": email_confirm_password,
             "phone": phone,
+            "country_code": country_code,
             "phone_password": phone_password,
             "phone_confirm_password": phone_confirm_password,
             "nick_name": nick_name,
@@ -51,10 +60,20 @@ class TestChineseRegisterPage:
         y = 1090
         touch = TouchAction(setup["driver"])
         touch.tap(x=x, y=y).perform()
+
+    # 手机格式校验
+    def phone_format_check(self, phone_number, country_code):
+        try:
+            parsed_number = phonenumbers.parse(phone_number, country_code)
+            is_valid_number = phonenumbers.is_valid_number(parsed_number)
+            return is_valid_number
+        except phonenumbers.NumberParseException as e:
+            print(f"号码解析异常{e}")
+            return False
+
     # 中文国内手机注册流程
-
-    def chlanguage_chregion_phone_regist(self, setup, get_verify_code=False):
-
+    def chlanguage_chregion_phone_regist(self, setup, get_verify_code=True):
+        wait = WebDriverWait(setup["driver"], 5)
         setup["logger"] = logging.getLogger(__name__)
         setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_AreaCodeList).click()
         setup["logger"].info("已展开区号列表")
@@ -94,16 +113,35 @@ class TestChineseRegisterPage:
         setup["driver"].implicitly_wait(1)
         setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_RegionChina).click()
         if get_verify_code == True:
+            # 点击发送验证码
             setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_GetCode).click()
             setup["logger"].info("已点击获取验证码")
+            print("即将获取提示元素")
+            print(setup["tips_element"]["Ch_sendCodeTip"])
+            code_sent = wait.until(ec.visibility_of_element_located((By.XPATH, setup["tips_element"]["Ch_sendCodeTip"])))
+            tip_text = code_sent.text
+            print(tip_text)
+            if setup["phone"] == "":
+                print("请输入手机号")
+                excepted_result = "请输入手机号"
+            else:
+                is_valid = self.phone_format_check(setup["phone"], setup["country_code"])
+                print(is_valid)
+                if is_valid:
+                    excepted_result = "验证码已发送"
+                    print("验证码已发送")
+                else:
+                    excepted_result = "请输入正确的手机号"
+                    print("请输入正确的手机号")
+            assert tip_text == excepted_result, "提示内容不正确"
+            # 需要从通知栏获取验证码
+            # setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_CodeInput).send_keys(setup[
+            #                                                                                             "verify_code"])
         else:
             pass
-
-
-
     # 用例1：正确输入所有信息
     def test_chlanguage_chregion_phone_regist(self, setup):
-        setup["phone"] = "12345678901"
+        setup["phone"] = "15250996930"
         self.chlanguage_chregion_phone_regist(setup)
 
 

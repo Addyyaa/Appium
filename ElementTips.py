@@ -32,6 +32,9 @@ register_page_tips = {
     "Ch_Email_Register_passwdInconsistent": '//android.widget.TextView[@text="密码与确认密码不一致"]',
     "Ch_PasswdFormatTip": '//android.widget.TextView[@text="密码由字母和数字组成，长度在6-12之间"]',
     "Ch_sendCode": '//android.widget.TextView[@text="请先获取验证码"]',
+    # 已发送验证吗
+    "Ch_sendCodeTip": '//android.webkit.WebView[@text="pages/mine/reg/index[2]"]/android.view.View['
+                      '1]/android.view.View/android.view.View/android.view.View/following-sibling::*[1]',
     "Ch_CodeInput": '//android.widget.TextView[@text="请输入验证码"]',
     "Ch_AgreementTip": '//android.widget.TextView[@text="请先阅读并勾选同意用户协议和隐私协议"]',
     "Ch_codeError": '//android.widget.TextView[@text="验证码错误"]',
