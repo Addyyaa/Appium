@@ -66,6 +66,7 @@ class TestChineseRegisterPage:
     # 每条用例执行前和执行后需要做的处理
     @pytest.fixture
     def function_setup(self, setup):
+        is_clear = False
         # 清理通知栏
         setup["driver"].open_notifications()
         setup["driver"].implicitly_wait(1)
@@ -73,11 +74,12 @@ class TestChineseRegisterPage:
         logging.info("通知栏内容已清理")
         setup["driver"].implicitly_wait(1)
         yield
-        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_PhoneNumber).clear()
-        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_Nickname).clear()
-        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_Passwd).clear()
-        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_ConfirmPasswd).clear()
-        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_CodeInput)
+        if is_clear == False:
+            setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_PhoneNumber).clear()
+            setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_Nickname).clear()
+            setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_Passwd).clear()
+            setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_ConfirmPasswd).clear()
+            setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_CodeInput)
 
     # 手机区号根据x、y点击
     def area_code_click(self, setup):
@@ -244,6 +246,7 @@ class TestChineseRegisterPage:
                 setup["logger"].info("注册成功")
                 assert tip_text == Config.Config.register_success_excepted_result, f"提示内容错误，应提示：" \
                                                                                    f"{Config.Config.register_success_excepted_result}，实际提示：{tip_text}"
+                return True
             else:
                 setup["logger"].error("获取元素失败")
         except selenium.common.exceptions.TimeoutException as e:
@@ -251,10 +254,12 @@ class TestChineseRegisterPage:
             setup["logger"].error("TimeoutError: %s", e)
 
     # 用例1：正确输入所有信息
-    def test_chlanguage_chregion_phone_regist(self, setup):
+    def test_chlanguage_chregion_phone_regist(self, setup, function_setup):
         setup["phone"] = "15250996938"
         setup["is_registered"] = True
-        self.chlanguage_chregion_phone_regist(setup)
+        is_clear = self.chlanguage_chregion_phone_regist(setup)
+        function_setup.is_clear = is_clear
+
 
     # 用例2
     def test_12(self):
