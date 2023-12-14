@@ -63,6 +63,18 @@ class TestChineseRegisterPage:
         print("类夹具的打印")
         driver.quit()
 
+    # 每条用例执行前和执行后需要做的处理
+    @pytest.fixture
+    def function_setup(self, setup):
+        # 清理通知栏
+        setup["driver"].open_notifications()
+        setup["driver"].implicitly_wait(1)
+        setup["driver"].find_element(by='id', value=ElementSMS.notification_clear).click()
+        logging.info("通知栏内容已清理")
+        setup["driver"].implicitly_wait(1)
+        yield
+
+
     # 手机区号根据x、y点击
     def area_code_click(self, setup):
         x = 500
@@ -124,16 +136,6 @@ class TestChineseRegisterPage:
             logging.info("已勾选用户协议")
         else:
            logging.info("不进行用户协议勾选")
-
-    # 每条用例执行前和执行后需要做的处理
-   @pytest.fixture
-    def function_setup(self, setup):
-    # 清理通知栏
-        setup["driver"].open_notifications()
-        setup["driver"].implicitly_wait(1)
-        setup["driver"].find_element(by='id', value=ElementSMS.notification_clear).click()
-        logging.info("通知栏内容已清理")
-        setup["driver"].implicitly_wait(1)
 
     # 中文国内手机注册流程
     def chlanguage_chregion_phone_regist(self, setup, get_verify_code=True, read_sms_code=True, is_check_user_agreement=True):
