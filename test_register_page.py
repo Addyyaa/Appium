@@ -73,7 +73,11 @@ class TestChineseRegisterPage:
         logging.info("通知栏内容已清理")
         setup["driver"].implicitly_wait(1)
         yield
-
+        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_PhoneNumber).clear()
+        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_Nickname).clear()
+        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_Passwd).clear()
+        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_ConfirmPasswd).clear()
+        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_CodeInput)
 
     # 手机区号根据x、y点击
     def area_code_click(self, setup):
