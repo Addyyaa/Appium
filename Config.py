@@ -12,3 +12,5 @@ class Config:
     area_code_searchtext = "中国大陆"
     country_code = "CN"
     is_registered = False
+    # 注册成功时的提示
+    register_success_excepted_result = "注册成功"

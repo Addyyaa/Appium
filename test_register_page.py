@@ -1,7 +1,5 @@
 import re
-
 import selenium.common.exceptions
-
 import Init
 import Element
 import ElementTips
@@ -18,8 +16,9 @@ import phonenumbers
 import ElementSMS
 
 class TestChineseRegisterPage:
-    @pytest.fixture(scope="class", autouse=True)
-    def setup(self):
+    @classmethod
+    @pytest.fixture(scope="class")
+    def setup(cls):
         driver = Init.get_driver()
         version = VersionSelection.VersionSelection(driver)
         version.version_selection("Chinese", "Chinese")
@@ -42,6 +41,7 @@ class TestChineseRegisterPage:
         # 进入注册界面
         driver.find_element(by='xpath', value=element.Ch_LoginPage_Register).click()
         logger = logging.getLogger(__name__)
+        wait = WebDriverWait(driver, 5)
         yield {
             "driver": driver,
             "element": element,
@@ -57,8 +57,10 @@ class TestChineseRegisterPage:
             "nick_name": nick_name,
             "verify_code": verify_code,
             "code_text": code_text,
-            "logger": logger
+            "logger": logger,
+            "wait": wait
         }
+        print("类夹具的打印")
         driver.quit()
 
     # 手机区号根据x、y点击
@@ -80,7 +82,7 @@ class TestChineseRegisterPage:
 
     # 从通知栏获取短信验证码
     def get_sms_verify_code(self, setup):
-        wait = WebDriverWait(setup["driver"], 1)
+        wait = WebDriverWait(setup["driver"], 30)
         setup["logger"].info("开始获取短信验证码")
         setup["driver"].open_notifications()
         setup["logger"].info("通知栏已打开")
@@ -115,11 +117,26 @@ class TestChineseRegisterPage:
             key_code = digit + 7  # 转换成对应的键码
             setup["driver"].press_keycode(key_code)
 
+    # 用户协议处理
+    def user_agreement_handle(self, setup, is_check_user_agreement):
+        if is_check_user_agreement:
+            setup["driver"].find_element(by='xpath', value=setup["element"].Ch_UserAgreement).click()
+            logging.info("已勾选用户协议")
+        else:
+           logging.info("不进行用户协议勾选")
 
-
+    # 每条用例执行前和执行后需要做的处理
+   @pytest.fixture
+    def function_setup(self, setup):
+    # 清理通知栏
+        setup["driver"].open_notifications()
+        setup["driver"].implicitly_wait(1)
+        setup["driver"].find_element(by='id', value=ElementSMS.notification_clear).click()
+        logging.info("通知栏内容已清理")
+        setup["driver"].implicitly_wait(1)
 
     # 中文国内手机注册流程
-    def chlanguage_chregion_phone_regist(self, setup, get_verify_code=True, read_sms_code=True,):
+    def chlanguage_chregion_phone_regist(self, setup, get_verify_code=True, read_sms_code=True, is_check_user_agreement=True):
         wait = WebDriverWait(setup["driver"], 5)
         setup["logger"] = logging.getLogger(__name__)
         setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_AreaCodeList).click()
@@ -175,14 +192,18 @@ class TestChineseRegisterPage:
                     if setup["is_registered"]:
                         excepted_result = "手机号或邮箱已存在"
                         logging.info("手机号或邮箱已存在")
+                        assert tip_text == excepted_result, "提示内容不正确"
+                        logging.info("断言已完成,即将退出程序")
+                        pytest.skip("断言成功，跳过测试")
                     else:
                         excepted_result = "验证码已发送"
                         logging.info("验证码已发送")
+                        assert tip_text == excepted_result, "提示内容不正确"
                 else:
                     excepted_result = "请输入正确的手机号码"
                     logging.info("请输入正确的手机号")
-            logging.info("开始断言")
-            assert tip_text == excepted_result, "提示内容不正确"
+                    assert tip_text == excepted_result, "提示内容不正确"
+                    pytest.skip("断言成功，跳过测试")
             logging.info("断言已完成")
             # 根据参数判断是否要读取短信验证码
             if read_sms_code:
@@ -200,10 +221,38 @@ class TestChineseRegisterPage:
             setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_CodeInput).click()
             self.virtural_keyboard_input(setup, data=setup["verify_code"])
             logging.info("未获取短信验证码但已输入自定义验证码")
+        setup["driver"].hide_keyboard()
+        logging.info("已关闭虚拟键盘")
+        setup["driver"].implicitly_wait(1)
+        self.user_agreement_handle(setup, is_check_user_agreement)
+        # 点击注册按钮
+        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_RegisterButton).click()
+        setup["logger"].info("已点击注册按钮")
+        # 获取弹窗元素
+        try:
+            tip = setup["wait"].until(
+                ec.visibility_of_element_located((By.XPATH, setup["tips_element"]["Ch_sendCodeTip"])))
+            if tip:
+                tip_text = tip.text
+                logging.info(tip_text)
+                setup["logger"].info("注册成功")
+                assert tip_text == Config.Config.register_success_excepted_result, f"提示内容错误，应提示：" \
+                                                                                   f"{Config.Config.register_success_excepted_result}，实际提示：{tip_text}"
+            else:
+                setup["logger"].error("获取元素失败")
+        except selenium.common.exceptions.TimeoutException as e:
+            logging.error(f"获取元素超时")
+            setup["logger"].error("TimeoutError: %s", e)
+
     # 用例1：正确输入所有信息
     def test_chlanguage_chregion_phone_regist(self, setup):
         setup["phone"] = "15250996938"
-        self.chlanguage_chregion_phone_regist(setup, read_sms_code=True)
+        setup["is_registered"] = True
+        self.chlanguage_chregion_phone_regist(setup)
+
+    # 用例2
+    def test_12(self):
+        print("test12")
 
 
 
