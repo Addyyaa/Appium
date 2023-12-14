@@ -198,8 +198,7 @@ class Element_version:
                                'contains(@text, "•")]'
     # 密码输入后的密码元素
     Ch_Phone_Register_Passwd_AfterInput = '(//android.view.View[@resource-id="input"])[2]/android.view.View/child::*[1]'
-    Ch_Phone_Register_ConfirmPasswd = '(//android.view.View[@resource-id="input"])[3]/android.view.View/child::*[2]'
-    Ch_Phone_Register_ConfirmPasswd_AfterInput = '(//android.view.View[@resource-id="input"])[3]/android.view.View/child::*[2]'
+    Ch_Phone_Register_ConfirmPasswd = '(//android.view.View[@resource-id="input"])[3]/android.view.View/android.widget.EditText | //android.widget.EditText[@text="•"]'
     Ch_Phone_Register_Region = '//android.webkit.WebView[@text="pages/mine/reg/index[2]"]/android.view.View[8]'
     Ch_Phone_Register_RegionChina = '//android.widget.TextView[@text="中国大陆"]'
     Ch_Phone_Register_RegionUSA = '//android.widget.TextView[@text="美国"]'

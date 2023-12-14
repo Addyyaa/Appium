@@ -61,25 +61,38 @@ class TestChineseRegisterPage:
             "wait": wait
         }
         print("类夹具的打印")
+        sleep(3)
         driver.quit()
 
     # 每条用例执行前和执行后需要做的处理
     @pytest.fixture
     def function_setup(self, setup):
-        is_clear = False
+        self.is_clear = False
         # 清理通知栏
         setup["driver"].open_notifications()
+        logging.info("已打开通知栏")
         setup["driver"].implicitly_wait(1)
-        setup["driver"].find_element(by='id', value=ElementSMS.notification_clear).click()
-        logging.info("通知栏内容已清理")
-        setup["driver"].implicitly_wait(1)
+        try:
+            setup["driver"].find_element(by='id', value=ElementSMS.notification_clear).click()
+            logging.info("通知栏内容已清理")
+            setup["driver"].implicitly_wait(1)
+        except selenium.common.exceptions.NoSuchElementException:
+            setup["driver"].press_keycode(4)
+            logging.info("没有可清理的内容，退出通知栏")
         yield
-        if is_clear == False:
+        if self.is_clear == False:
             setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_PhoneNumber).clear()
+            logging.info("已清理手机号码")
             setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_Nickname).clear()
+            logging.info("已清理昵称")
             setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_Passwd).clear()
+            logging.info("已清理密码")
             setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_ConfirmPasswd).clear()
+            logging.info("已清理确认密码")
             setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_CodeInput)
+            logging.info("已清理验证码")
+        else:
+            logging.info("注册成功，无需清理输入框！")
 
     # 手机区号根据x、y点击
     def area_code_click(self, setup):
@@ -110,7 +123,7 @@ class TestChineseRegisterPage:
             if code:
                 setup["logger"].info("验证码获取成功")
                 setup["logger"].info(code.text)
-                pattern = r"证码为：(\d+)"
+                pattern = r"码为：(\d+)"
                 verify_code = re.search(pattern, code.text).group(1)
                 setup["logger"].info(f"验证码为:{verify_code}")
                 if verify_code:
@@ -246,7 +259,8 @@ class TestChineseRegisterPage:
                 setup["logger"].info("注册成功")
                 assert tip_text == Config.Config.register_success_excepted_result, f"提示内容错误，应提示：" \
                                                                                    f"{Config.Config.register_success_excepted_result}，实际提示：{tip_text}"
-                return True
+                # 此处设置变量是为了注册成功时终止情况输入框操作
+                self.is_clear = True
             else:
                 setup["logger"].error("获取元素失败")
         except selenium.common.exceptions.TimeoutException as e:
@@ -256,9 +270,10 @@ class TestChineseRegisterPage:
     # 用例1：正确输入所有信息
     def test_chlanguage_chregion_phone_regist(self, setup, function_setup):
         setup["phone"] = "15250996938"
-        setup["is_registered"] = True
-        is_clear = self.chlanguage_chregion_phone_regist(setup)
-        function_setup.is_clear = is_clear
+        setup["is_registered"] = False
+        self.chlanguage_chregion_phone_regist(setup)
+
+
 
 
     # 用例2
