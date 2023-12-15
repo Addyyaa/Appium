@@ -39,7 +39,6 @@ class TestChineseRegisterPage:
         phone_confirm_password = Config.Config.phone_confirm_password
         nick_name = Config.Config.nick_name
         code_text = Config.Config.area_code_searchtext
-        # TODO 需要对验证码重新设计，验证码输入、不输入、没点击获取验证码
         verify_code = Config.Config.verify_code
         # 设置全局的隐式等待时间
         driver.implicitly_wait(5)
@@ -69,7 +68,6 @@ class TestChineseRegisterPage:
             "wait": wait
         }
         print("类夹具的打印")
-        sleep(3)
         driver.quit()
 
     # 每条用例执行前和执行后需要做的处理
@@ -245,8 +243,10 @@ class TestChineseRegisterPage:
             tip_text = code_sent.text
             setup["logger"].info(tip_text)
             if setup["phone"] == "":
-                setup["logger"].info("请输入手机号")
-                excepted_result = "请输入手机号"
+                setup["logger"].info("请输入手机号码")
+                excepted_result = setup["tips_element"]["Ch_Phone_Register_PhoneNumber_InputTips"]
+                assert tip_text == excepted_result, "提示内容不正确"
+                # TODO 需要处理不输入手机号并且提示后的逻辑
             else:
                 is_valid = self.phone_format_check(setup["phone"], setup["country_code"])
                 setup["logger"].info(is_valid)
@@ -349,10 +349,15 @@ class TestChineseRegisterPage:
         except selenium.common.exceptions.NoSuchElementException:
             setup["logger"].error("未找到对应元素")
 
-    # 用例1：正确输入所有信息
+    # 用例1: 手机注册密码输入sf1234
     def test_chlanguage_chregion_phone_regist(self, setup, function_setup):
         setup["phone"] = "15250996938"
-        setup["is_registered"] = False
+        setup["passwd"] = "sf1234"
+        self.chlanguage_chregion_phone_regist(setup)
+
+    # 用例1：正确输入所有信息
+    def test_chlanguage_chregion_phone_regist(self, setup, function_setup):
+        setup["phone"] = ""
         self.chlanguage_chregion_phone_regist(setup)
 
 

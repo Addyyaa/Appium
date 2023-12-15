@@ -41,4 +41,6 @@ register_page_tips = {
     "Ch_Email_Register_CorrectEmailTip": '//android.widget.TextView[@text="请输入正确的邮箱账号"]',
     "Ch_Phone_Register_CorrectPhoneTip": '//android.widget.TextView[@text="请输入正确的手机号码"]',
     "Ch_UserExist": '//android.widget.TextView[@text="手机号或邮箱已存在"]',
+    # 提示内容
+    "Ch_Phone_Register_PhoneNumber_InputTips": '请输入手机号码',
 }
