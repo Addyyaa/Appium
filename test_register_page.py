@@ -102,7 +102,6 @@ class TestChineseRegisterPage:
             setup["logger"].info("注册成功，无需清理输入框！")
 
     def find_notification_clear(self, setup):
-        driver = W
         try:
             # 显式等待，等待元素可见
             setup["logger"].info("开始查找")
