@@ -15,11 +15,14 @@ from selenium.webdriver.support import expected_conditions as ec
 import phonenumbers
 import ElementSMS
 
+
 class TestChineseRegisterPage:
     @classmethod
     @pytest.fixture(scope="class")
     def setup(cls):
         driver = Init.get_driver()
+        # 先进行一次返回防止通知栏已打开的情形
+        driver.press_keycode(4)
         version = VersionSelection.VersionSelection(driver)
         version.version_selection("Chinese", "Chinese")
         element = Element.Element_version
@@ -38,8 +41,13 @@ class TestChineseRegisterPage:
         code_text = Config.Config.area_code_searchtext
         # TODO 需要对验证码重新设计，验证码输入、不输入、没点击获取验证码
         verify_code = Config.Config.verify_code
+        # 设置全局的隐式等待时间
+        driver.implicitly_wait(5)
         # 进入注册界面
-        driver.find_element(by='xpath', value=element.Ch_LoginPage_Register).click()
+        try:
+            driver.find_element(by='xpath', value=element.Ch_LoginPage_Register).click()
+        except selenium.common.exceptions.NoSuchElementException:
+            logging.error("没有找到进入注册页面按钮")
         logger = logging.getLogger(__name__)
         wait = WebDriverWait(driver, 5)
         yield {
@@ -70,29 +78,72 @@ class TestChineseRegisterPage:
         self.is_clear = False
         # 清理通知栏
         setup["driver"].open_notifications()
-        logging.info("已打开通知栏")
-        setup["driver"].implicitly_wait(1)
-        try:
-            setup["driver"].find_element(by='id', value=ElementSMS.notification_clear).click()
-            logging.info("通知栏内容已清理")
-            setup["driver"].implicitly_wait(1)
-        except selenium.common.exceptions.NoSuchElementException:
-            setup["driver"].press_keycode(4)
-            logging.info("没有可清理的内容，退出通知栏")
-        yield
-        if self.is_clear == False:
-            setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_PhoneNumber).clear()
-            logging.info("已清理手机号码")
-            setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_Nickname).clear()
-            logging.info("已清理昵称")
-            setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_Passwd).clear()
-            logging.info("已清理密码")
-            setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_ConfirmPasswd).clear()
-            logging.info("已清理确认密码")
-            setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_CodeInput)
-            logging.info("已清理验证码")
+        setup["logger"].info("已打开通知栏")
+        is_exist = self.find_notification_clear(setup)
+        if is_exist is not None:
+            is_exist.click()
+            setup["logger"].info("通知栏内容已清理")
         else:
-            logging.info("注册成功，无需清理输入框！")
+            setup["driver"].press_keycode(4)
+            setup["logger"].info("没有可清理的内容，退出通知栏")
+        yield
+        if not self.is_clear:
+            self.find_phone_number_input(setup).clear()
+            setup["logger"].info("已清理手机号码")
+            self.find_register_nickname_input(setup).clear()
+            setup["logger"].info("已清理昵称")
+            self.find_register_phone_passwd(setup).clear()
+            setup["logger"].info("已清理密码")
+            self.find_register_phone_confirmpasswd(setup).clear()
+            setup["logger"].info("已清理确认密码")
+            self.find_register_phone_verifycode(setup).clear()
+            setup["logger"].info("已清理验证码")
+        else:
+            setup["logger"].info("注册成功，无需清理输入框！")
+
+    def find_notification_clear(self, setup):
+        driver = W
+        try:
+            # 显式等待，等待元素可见
+            setup["logger"].info("开始查找")
+            element = WebDriverWait(setup["driver"], 1).until(
+                ec.visibility_of_element_located((By.ID, ElementSMS.notification_clear))
+            )
+            return element
+        except selenium.common.exceptions.TimeoutException:
+            setup["logger"].error("元素未在规定时间内可见")
+            setup["logger"].info("查找结束")
+            return None
+
+
+    def find_register_phone_verifycode(self, setup):
+        try:
+            return setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_CodeInput)
+        except selenium.common.exceptions.NoSuchElementException:
+            setup["logger"].error("未找到对应元素")
+
+    def find_register_phone_confirmpasswd(self, setup):
+        try:
+            return setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_ConfirmPasswd)
+        except selenium.common.exceptions.NoSuchElementException:
+            setup["logger"].error("未找到对应元素")
+
+    def find_register_phone_passwd(self, setup):
+        try:
+            return setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_Passwd)
+        except selenium.common.exceptions.NoSuchElementException:
+            setup["logger"].error("未找到对应元素")
+    def find_register_nickname_input(self, setup):
+        try:
+            return setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_Nickname)
+        except selenium.common.exceptions.NoSuchElementException:
+            setup["logger"].error("未找到对应元素")
+
+    def find_phone_number_input(self, setup):
+        try:
+            return setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_PhoneNumber)
+        except selenium.common.exceptions.NoSuchElementException:
+            setup["logger"].error("未找到对应元素")
 
     # 手机区号根据x、y点击
     def area_code_click(self, setup):
@@ -117,7 +168,6 @@ class TestChineseRegisterPage:
         setup["logger"].info("开始获取短信验证码")
         setup["driver"].open_notifications()
         setup["logger"].info("通知栏已打开")
-        setup["driver"].implicitly_wait(1)
         try:
             code = wait.until(ec.visibility_of_element_located((By.XPATH, ElementSMS.sms_code)))
             if code:
@@ -129,9 +179,8 @@ class TestChineseRegisterPage:
                 if verify_code:
                     setup["logger"].info("即将关闭通知栏")
                     # 清除通知栏内容防止下次获取验证码时读取到以前的验证码
-                    setup["driver"].find_element(by='id', value=ElementSMS.notification_clear).click()
+                    self.find_notification_clear(setup).click()
                     setup["logger"].info("通知栏已关闭")
-                    setup["driver"].implicitly_wait(1)
                     return str(verify_code)
                 else:
                     setup["logger"].error("验证码获取失败，未能正则匹配到验证码")
@@ -152,102 +201,94 @@ class TestChineseRegisterPage:
     def user_agreement_handle(self, setup, is_check_user_agreement):
         if is_check_user_agreement:
             setup["driver"].find_element(by='xpath', value=setup["element"].Ch_UserAgreement).click()
-            logging.info("已勾选用户协议")
+            setup["logger"].info("已勾选用户协议")
         else:
-           logging.info("不进行用户协议勾选")
+           setup["logger"].info("不进行用户协议勾选")
 
     # 中文国内手机注册流程
     def chlanguage_chregion_phone_regist(self, setup, get_verify_code=True, read_sms_code=True, is_check_user_agreement=True):
         wait = WebDriverWait(setup["driver"], 5)
-        setup["logger"] = logging.getLogger(__name__)
-        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_AreaCodeList).click()
+        self.find_register_phone_area_list(setup).click()
         setup["logger"].info("已展开区号列表")
         sleep(1)
         self.area_code_click(setup)
         setup["logger"].info("已点击搜索框")
-        setup["driver"].implicitly_wait(10)
-        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_AreaCode_Search).send_keys(
+        self.find_register_phone_areacode_search(setup).send_keys(
             setup["code_text"])
         setup["logger"].info("已发送搜索文本")
         setup["driver"].hide_keyboard()
         setup["logger"].info("已关闭虚拟键盘")
-        setup["driver"].implicitly_wait(1)
-        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_86).click()
+        self.find_register_phone_86code(setup).click()
         setup["logger"].info("已选择区号")
-        setup["driver"].implicitly_wait(1)
-        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_PhoneNumber).click()
-        setup["driver"].implicitly_wait(1)
+        self.find_phone_number_input(setup).click()
         setup["logger"].info("已点击手机号输入框")
         # 由于文本框不支持sendkeys，所以使用虚拟键盘输入
         self.virtural_keyboard_input(setup, data=setup["phone"])
         setup["logger"].info("已输入手机号")
         setup["driver"].hide_keyboard()
         setup["logger"].info("已关闭虚拟键盘")
-        setup["driver"].implicitly_wait(1)
-        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_Nickname).send_keys(setup["nick_name"])
+        self.find_register_nickname_input(setup).send_keys(setup["nick_name"])
         setup["logger"].info("已输入昵称")
-        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_Passwd).send_keys(setup["phone_password"])
+        self.find_register_phone_passwd(setup).send_keys(setup["phone_password"])
         setup["logger"].info("已输入密码")
-        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_ConfirmPasswd).send_keys(
+        self.find_register_phone_confirmpasswd(setup).send_keys(
             setup["phone_confirm_password"])
         setup["logger"].info("已输入确认密码")
-        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_Region).click()
-        setup["driver"].implicitly_wait(1)
-        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_RegionChina).click()
+        self.find_register_phone_region(setup).click()
+        self.find_register_phone_china_region(setup).click()
         if get_verify_code == True:
             # 点击发送验证码
-            setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_GetCode).click()
+            self.find_register_phone_getcode(setup).click()
             setup["logger"].info("已点击获取验证码")
-            logging.info("即将获取提示元素")
-            logging.info(setup["tips_element"]["Ch_sendCodeTip"])
+            setup["logger"].info("即将获取提示元素")
+            setup["logger"].info(setup["tips_element"]["Ch_sendCodeTip"])
             code_sent = wait.until(ec.visibility_of_element_located((By.XPATH, setup["tips_element"]["Ch_sendCodeTip"])))
             tip_text = code_sent.text
-            logging.info(tip_text)
+            setup["logger"].info(tip_text)
             if setup["phone"] == "":
-                logging.info("请输入手机号")
+                setup["logger"].info("请输入手机号")
                 excepted_result = "请输入手机号"
             else:
                 is_valid = self.phone_format_check(setup["phone"], setup["country_code"])
-                logging.info(is_valid)
+                setup["logger"].info(is_valid)
                 if is_valid:
                     if setup["is_registered"]:
                         excepted_result = "手机号或邮箱已存在"
-                        logging.info("手机号或邮箱已存在")
+                        setup["logger"].info("手机号或邮箱已存在")
                         assert tip_text == excepted_result, "提示内容不正确"
-                        logging.info("断言已完成,即将退出程序")
+                        setup["logger"].info("断言已完成,即将退出程序")
                         pytest.skip("断言成功，跳过测试")
                     else:
                         excepted_result = "验证码已发送"
-                        logging.info("验证码已发送")
+                        setup["logger"].info("验证码已发送")
                         assert tip_text == excepted_result, "提示内容不正确"
                 else:
                     excepted_result = "请输入正确的手机号码"
-                    logging.info("请输入正确的手机号")
+                    setup["logger"].info("请输入正确的手机号")
                     assert tip_text == excepted_result, "提示内容不正确"
                     pytest.skip("断言成功，跳过测试")
-            logging.info("断言已完成")
+            setup["logger"].info("断言已完成")
             # 根据参数判断是否要读取短信验证码
             if read_sms_code:
                 # 需要从通知栏获取验证码
-                logging.info("开始读取短信验证码")
+                setup["logger"].info("开始读取短信验证码")
                 verify_code = self.get_sms_verify_code(setup)
-                logging.info(f"短信验证码读取完成，验证码为：{verify_code}")
+                setup["logger"].info(f"短信验证码读取完成，验证码为：{verify_code}")
                 # 如果用户想要使用自定义的验证码，则重新赋值便可
                 setup["verify_code"] = verify_code
-            logging.info("开始填写验证码")
-            setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_CodeInput).click()
+            setup["logger"].info("开始填写验证码")
+            self.find_register_phone_verifycode(setup).click()
             self.virtural_keyboard_input(setup, data=setup["verify_code"])
-            logging.info("已输入获取的短信验证码")
+            setup["logger"].info("已输入获取的短信验证码")
         else:
-            setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_CodeInput).click()
+            self.find_register_phone_verifycode(setup).click()
             self.virtural_keyboard_input(setup, data=setup["verify_code"])
-            logging.info("未获取短信验证码但已输入自定义验证码")
+            setup["logger"].info("未获取短信验证码但已输入自定义验证码")
         setup["driver"].hide_keyboard()
-        logging.info("已关闭虚拟键盘")
-        setup["driver"].implicitly_wait(1)
+        setup["logger"].info("已关闭虚拟键盘")
         self.user_agreement_handle(setup, is_check_user_agreement)
         # 点击注册按钮
-        setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_RegisterButton).click()
+        self.find_register_phone_register_button(setup).click()
         setup["logger"].info("已点击注册按钮")
         # 获取弹窗元素
         try:
@@ -255,7 +296,7 @@ class TestChineseRegisterPage:
                 ec.visibility_of_element_located((By.XPATH, setup["tips_element"]["Ch_sendCodeTip"])))
             if tip:
                 tip_text = tip.text
-                logging.info(tip_text)
+                setup["logger"].info(tip_text)
                 setup["logger"].info("注册成功")
                 assert tip_text == Config.Config.register_success_excepted_result, f"提示内容错误，应提示：" \
                                                                                    f"{Config.Config.register_success_excepted_result}，实际提示：{tip_text}"
@@ -266,6 +307,48 @@ class TestChineseRegisterPage:
         except selenium.common.exceptions.TimeoutException as e:
             logging.error(f"获取元素超时")
             setup["logger"].error("TimeoutError: %s", e)
+
+    def find_register_phone_register_button(self, setup):
+        try:
+            return setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_RegisterButton)
+        except selenium.common.exceptions.NoSuchElementException:
+            setup["logger"].error("未找到对应元素")
+
+    def find_register_phone_getcode(self, setup):
+        try:
+            return setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_GetCode)
+        except selenium.common.exceptions.NoSuchElementException:
+            setup["logger"].error("未找到对应元素")
+
+    def find_register_phone_china_region(self, setup):
+        try:
+            return setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_RegionChina)
+        except selenium.common.exceptions.NoSuchElementException:
+            setup["logger"].error("未找到对应元素")
+
+    def find_register_phone_region(self, setup):
+        try:
+            return setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_Region)
+        except selenium.common.exceptions.NoSuchElementException:
+            setup["logger"].error("未找到对应元素")
+
+    def find_register_phone_86code(self, setup):
+        try:
+            return setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_86)
+        except selenium.common.exceptions.NoSuchElementException:
+            setup["logger"].error("未找到对应元素")
+
+    def find_register_phone_areacode_search(self, setup):
+        try:
+            return setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_AreaCode_Search)
+        except selenium.common.exceptions.NoSuchElementException:
+            setup["logger"].error("未找到对应元素")
+
+    def find_register_phone_area_list(self, setup):
+        try:
+            return setup["driver"].find_element(by='xpath', value=setup["element"].Ch_Phone_Register_AreaCodeList)
+        except selenium.common.exceptions.NoSuchElementException:
+            setup["logger"].error("未找到对应元素")
 
     # 用例1：正确输入所有信息
     def test_chlanguage_chregion_phone_regist(self, setup, function_setup):
