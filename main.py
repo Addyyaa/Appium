@@ -12,7 +12,7 @@ Agreement_verifycode = (True, True)
 # 决定是否获取验证码，是否填写验证码,第二个参数为non-custom为使用短信验证码，非non-custom为真是短信验证码，None为不填写验证码
 getCode_fillCode = (True, None)
 # 选择登录方式，email为邮箱登录，phone为手机号登录，code为验证码登录
-Login_type = "code"
+Login_type = "phone"
 driver = get_driver()
 version = VersionSelection(driver)
 version.version_selection(version=versions, language=Language)
