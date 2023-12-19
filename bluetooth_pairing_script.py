@@ -147,10 +147,22 @@ class bluetooth_pairing_test:
             except selenium.common.exceptions.TimeoutException:
                 self.logger.error(f"未找到设备：{device4}")
             if not (device1_element and device2_element and device3_element and device4_element):
+                is_continue = False
                 self.logger.error("存在了设备蓝牙丢失，请打开后输入 continue 继续")
                 while True:
                     user_input = input("请手动打开丢失蓝牙信号设备的蓝牙并输入 continue 继续, 输入 stop 停止脚本")
                     if user_input == "continue":
+                        driver.press_keycode(4)
+                        is_continue = True
+                        try:
+                            product_selector = WebDriverWait(driver, 10).until(
+                                ec.visibility_of_element_located((By.XPATH,
+
+                                                                  '//android.webkit.WebView[@text="pages/work/addAhost1[4]"]/android.view.View[3]'))
+                            )
+                            product_selector.click()
+                        except selenium.common.exceptions.TimeoutException:
+                            self.logger.error("未找到产品选择按钮")
                         break
                     if user_input == "stop":
                         total_successful_rate = round(one_time_setup_successful / count * 100, 2)
@@ -159,6 +171,8 @@ class bluetooth_pairing_test:
                         sys.exit(0)
                     else:
                         print("输入错误，请重新输入")
+                if is_continue:
+                    continue
 
             start_setup_button = WebDriverWait(driver, 10).until(
                 ec.visibility_of_element_located((By.ID, 'com.ost.pintura:id/btn_next'))
