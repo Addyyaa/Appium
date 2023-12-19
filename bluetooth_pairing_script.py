@@ -37,7 +37,7 @@ class bluetooth_pairing_test:
         else:
             print("Agreement 变量错误！")
 
-    def screenshot(self, name):
+    def screenshot_diy(self, name):
         save_directory = "fail_screenshot"
         os.makedirs(save_directory, exist_ok=True)
         # 构造文件路径
@@ -147,8 +147,18 @@ class bluetooth_pairing_test:
             except selenium.common.exceptions.TimeoutException:
                 self.logger.error(f"未找到设备：{device4}")
             if not (device1_element and device2_element and device3_element and device4_element):
-                self.logger.error("即将退出程序")
-                break
+                self.logger.error("存在了设备蓝牙丢失，请打开后输入 continue 继续")
+                user_input = input("请手动打开丢失蓝牙信号设备的蓝牙并输入 continue 继续, 输入 stop 停止脚本")
+                while True:
+                    if user_input == "continue":
+                        break
+                    if user_input == "stop":
+                        total_successful_rate = round(one_time_setup_successful / count * 100, 2)
+                        with open("配网结果.txt", "a", encoding=encoding) as f:
+                            f.write(f"总的成功率:{total_successful_rate}%\n")
+                        sys.exit(0)
+                    else:
+                        print("输入错误，请重新输入")
 
             start_setup_button = WebDriverWait(driver, 10).until(
                 ec.visibility_of_element_located((By.ID, 'com.ost.pintura:id/btn_next'))
@@ -299,7 +309,15 @@ class bluetooth_pairing_test:
                 count += 1
                 # 生成配网结果文件
                 with open("配网结果.txt", "a", encoding=encoding) as f:
-                    f.write(f"第{count}次配网：{device1}-{device1_result}\t{device2}-{device2_result}\t{device3}-{device3_result}\t{device4}-{device4_result}\n")
+                    f.write(f"第{count}次配网：{device1}-{device1_result}\t{device2}-{device2_result}\t{device3}-"
+                            f"{device3_result}\t{device4}-{device4_result}\t耗时：{total_time}s\n")
+
+                # 如果存在配网失败的设备，则截图
+                if device1_result == "连接失败" or device2_result == "连接失败" or device3_result == "连接失败" or device4_result == \
+                        "连接失败":
+                    self.logger.info("发现配网失败的设备，将进行截图")
+                    self.screenshot_diy(f"{count}次配网截图.png")
+
                 # 返回产品选择界面
                 driver.press_keycode(4)
                 driver.press_keycode(4)
@@ -313,10 +331,7 @@ class bluetooth_pairing_test:
                     product_selector.click()
                 except selenium.common.exceptions.TimeoutException:
                     self.logger.error("未找到产品选择按钮")
-            # 如果存在配网失败的设备，则截图
-            if device1_result == "配网失败" or device2_result == "配网失败" or device3_result == "配网失败" or device4_result == "配网失败":
-                self.logger.info("发现配网失败的设备，将进行截图")
-                driver.screenshot(f"第{count}次配网失败.png")
+
 
         # 统计总的成功率
         total_successful_rate = round(one_time_setup_successful / count * 100, 2)
