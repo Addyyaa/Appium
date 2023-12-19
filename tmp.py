@@ -1,17 +1,34 @@
-class MyClass:
-    @classmethod
-    def class_method(cls):
-        # 在类方法中定义属性
-        cls.class_variable = "Modified in class method"
+# 定义文件名
+file_name = "配网结果.txt"
 
-    def another_method(self):
-        # 在其他方法中访问类方法中定义的属性
-        MyClass.class_variable = "xxxx"
-        print(f"Accessing class variable in another method: {MyClass.class_variable}")
+# 初始化计数器和最后一次配网次数
+fail_count = 0
+last_attempt = 0
 
-# 直接通过类调用类方法
-MyClass.class_method()
+# 尝试打开文件
+try:
+    with open(file_name, 'r', encoding='utf-8') as file:
+        # 逐行读取文件内容
+        lines = file.readlines()
 
-# 通过类调用其他方法，访问类方法中定义的属性
-obj = MyClass()
-obj.another_method()
+        # 遍历每一行
+        for line_number, line in enumerate(lines, start=1):
+            # 判断是否包含连接失败的关键词
+            if "连接失败" in line:
+                fail_count += 1
+
+            # 获取最后一次配网次数
+            if line.startswith("第") and "次配网" in line:
+                last_attempt = int(line.split("次")[0][1:])
+except FileNotFoundError:
+    print(f"找不到文件：{file_name}")
+except Exception as e:
+    print(f"发生错误：{e}")
+else:
+    # 如果文件不为空，使用 line_number 获取最后一次配网次数
+    if line_number > 0:
+        last_attempt = line_number
+
+    # 打印统计结果
+    print(f"连接失败的次数：{fail_count}")
+    print(f"最后一次配网次数：{last_attempt}")

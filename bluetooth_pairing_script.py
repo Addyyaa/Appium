@@ -46,6 +46,39 @@ class bluetooth_pairing_test:
         with open(file_path, 'wb') as f:
             f.write(screenshot_data)
 
+    def test_result_statistics(self, file_name):
+        # 初始化计数器和最后一次配网次数
+        fail_count = 0
+        last_attempt = 0
+        # 尝试打开文件
+        try:
+            with open(file_name, 'r', encoding='utf-8') as file:
+                # 逐行读取文件内容
+                lines = file.readlines()
+
+                # 遍历每一行
+                for line_number, line in enumerate(lines, start=1):
+                    # 判断是否包含连接失败的关键词
+                    if "连接失败" in line:
+                        fail_count += 1
+
+                    # 获取最后一次配网次数
+                    if line.startswith("第") and "次配网" in line:
+                        last_attempt = int(line.split("次")[0][1:])
+        except FileNotFoundError:
+            print(f"找不到文件：{file_name}")
+        except Exception as e:
+            print(f"发生错误：{e}")
+        else:
+            # 如果文件不为空，使用 line_number 获取最后一次配网次数
+            if line_number > 0:
+                last_attempt = line_number
+
+            # 打印统计结果
+            print(f"连接失败的次数：{fail_count}")
+            print(f"最后一次配网次数：{last_attempt}")
+            return fail_count, last_attempt
+
     def detect_network_setup_interface(self):
         driver = self.driver
         wait = WebDriverWait(driver, 5)
@@ -84,7 +117,7 @@ class bluetooth_pairing_test:
             self.logger.error("未找到蓝牙授权按钮")
 
         sleep(5)
-
+        # TODO 需要优化 count次数会根据文件已有的次数自动变化
         count = 0
         one_time_setup_successful = 0
         circle_times = 100
@@ -325,13 +358,11 @@ class bluetooth_pairing_test:
                 with open("配网结果.txt", "a", encoding=encoding) as f:
                     f.write(f"第{count}次配网：{device1}-{device1_result}\t{device2}-{device2_result}\t{device3}-"
                             f"{device3_result}\t{device4}-{device4_result}\t耗时：{total_time}s\n")
-
                 # 如果存在配网失败的设备，则截图
                 if device1_result == "连接失败" or device2_result == "连接失败" or device3_result == "连接失败" or device4_result == \
                         "连接失败":
                     self.logger.info("发现配网失败的设备，将进行截图")
                     self.screenshot_diy(f"{count}次配网截图.png")
-
                 # 返回产品选择界面
                 driver.press_keycode(4)
                 driver.press_keycode(4)
@@ -345,15 +376,20 @@ class bluetooth_pairing_test:
                     product_selector.click()
                 except selenium.common.exceptions.TimeoutException:
                     self.logger.error("未找到产品选择按钮")
+            if count == circle_times:
+                self.logger.info(f"已测试{circle_times}次，程序即将退出")
+                break
 
 
         # 统计总的成功率
         total_successful_rate = round(one_time_setup_successful / count * 100, 2)
         self.logger.info(
-            f"总计配网:{count}次，成功:{one_time_setup_successful}次，失败:{count - one_time_setup_successful}次")
-        self.logger.info(f"总的成功率:{total_successful_rate}%")
+            f"本次总计配网:{count}次，不含文件中已配网的次数，成功:{one_time_setup_successful}次，失败:{count - one_time_setup_successful}次")
+        self.logger.info(f"本次总的成功率:{total_successful_rate}%")
+        # 生成配网结果文件
+        fail_count, last_attempt = self.test_result_statistics()
         with open("配网结果.txt", "a", encoding=encoding) as f:
-            f.write(f"总的成功率:{total_successful_rate}%\n")
+            f.write(f"总的成功率:{(circle_times-fail_count)/circle_times*100:.2f)}%\n")
         if count != circle_times:
             self.logger.info(f"由于异常原因导致还差{circle_times - count}次配网，程序即将退出")
             sys.exit()
