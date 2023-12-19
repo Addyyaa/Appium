@@ -148,8 +148,8 @@ class bluetooth_pairing_test:
                 self.logger.error(f"未找到设备：{device4}")
             if not (device1_element and device2_element and device3_element and device4_element):
                 self.logger.error("存在了设备蓝牙丢失，请打开后输入 continue 继续")
-                user_input = input("请手动打开丢失蓝牙信号设备的蓝牙并输入 continue 继续, 输入 stop 停止脚本")
                 while True:
+                    user_input = input("请手动打开丢失蓝牙信号设备的蓝牙并输入 continue 继续, 输入 stop 停止脚本")
                     if user_input == "continue":
                         break
                     if user_input == "stop":
