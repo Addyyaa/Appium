@@ -17,7 +17,7 @@ import sys
 
 class bluetooth_pairing_test:
     def __init__(self):
-        logging.basicConfig(level=logging.INFO,
+        logging.basicConfig(filename='蓝牙配网记录日志.log', filemode='a', level=logging.INFO,
                             format='%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s - %(exc_info)s')
         language = 'Chinese'
         versions = 'Chinese'
@@ -569,6 +569,7 @@ class bluetooth_pairing_test:
             sys.exit()
 
         # 统计总的成功率
+        self.logger.info(f"count = {count}，remaining_iterations={remaining_iterations}, circle_times={circle_times}")
         total_successful_rate = round((count - fail_count - (current_iteration-one_time_setup_successful)) / count * 100, 2)
         self.logger.info(
             f"本次运行总计配网:{current_iteration}次，成功:{one_time_setup_successful}次，失败"
