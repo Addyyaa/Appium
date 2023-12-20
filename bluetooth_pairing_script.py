@@ -362,6 +362,11 @@ class bluetooth_pairing_test:
                     self.logger.info(
                         f"配网成功的设备数量：{devices_successful}，失败的设备数量：{devices_num - devices_successful}")
                     count += 1
+                    # 如果存在配网失败的设备，则截图
+                    if device1_result == "连接失败" or device2_result == "连接失败" or device3_result == "连接失败" or device4_result == \
+                            "连接失败":
+                        self.logger.info("发现配网失败的设备，将进行截图")
+                        self.screenshot_diy(f"{count}次配网截图.png")
                     # 处理配网失败的设备
                     second_try_result1 = second_try_result2 = second_try_result3 = second_try_result4 = ""
                     if device1_result == "连接失败":
@@ -544,11 +549,6 @@ class bluetooth_pairing_test:
                                 f"-{device2_result}\t{second_try_result2}\t{device3}-"
                                 f"{device3_result}\t{second_try_result3}\t{device4}-{device4_result}\t{second_try_result4}\t耗时"
                                 f"：{total_time}s\n")
-                    # 如果存在配网失败的设备，则截图
-                    if device1_result == "连接失败" or device2_result == "连接失败" or device3_result == "连接失败" or device4_result == \
-                            "连接失败":
-                        self.logger.info("发现配网失败的设备，将进行截图")
-                        self.screenshot_diy(f"{count}次配网截图.png")
                     # 返回产品选择界面
                     driver.press_keycode(4)
                     driver.press_keycode(4)
