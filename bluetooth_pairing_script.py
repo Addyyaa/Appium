@@ -55,13 +55,14 @@ class bluetooth_pairing_test:
             with open(file_name, 'r', encoding='utf-8') as file:
                 # 逐行读取文件内容
                 lines = file.readlines()
+                fail_count = 0
+                line_number = 0
 
                 # 遍历每一行
                 for line_number, line in enumerate(lines, start=1):
                     # 判断是否包含连接失败的关键词
                     if "连接失败" in line:
                         fail_count += 1
-
                     # 获取最后一次配网次数
                     if line.startswith("第") and "次配网" in line:
                         last_attempt = int(line.split("次")[0][1:])
@@ -123,266 +124,450 @@ class bluetooth_pairing_test:
         # TODO 需要优化 count次数会根据文件已有的次数自动变化
         one_time_setup_successful = 0
         circle_times = 100
+        remaining_iterations = circle_times - count
         devices_num = 4
         encoding = 'utf-8'
         file_name = file_name
         # 循环配网，直到 circle_times 次
-        for i in range(circle_times):
-            devices_successful = 0
-            device1 = "Pintura-blt-L000892"
-            device2 = "Pintura-blt-Ltest20"
-            device3 = "Pintura-blt-L000308"
-            device4 = "Pintura-blt-L000329"
-            wifi_name = "zhancheng"
-            wifi_passwd = "nanjingzhancheng"
-            device1_element, device2_element, device3_element, device4_element = False, False, False, False
-            device1_result, device2_result, device3_result, device4_result = None, None, None, None
-            try:
-                device1_element = WebDriverWait(driver, 10).until(
-                    ec.visibility_of_element_located((By.XPATH, f'//android.widget.TextView['
-                                                                f'@resource-id="com.ost.pintura:id/tv_name" and '
-                                                                f'@text="{device1}"]'))
-                )
-                device1_element.click()
-                wait.until((ec.staleness_of(device1_element)))
-                self.logger.info(f"找到设备：{device1}")
-            except selenium.common.exceptions.TimeoutException:
-                self.logger.error(f"未找到设备：{device1}")
+        if remaining_iterations > 0:
+            for i in range(remaining_iterations):
+                devices_successful = 0
+                device1 = "Pintura-blt-L000892"
+                device2 = "Pintura-blt-Ltest20"
+                device3 = "Pintura-blt-L000308"
+                device4 = "Pintura-blt-L000329"
+                wifi_name = "zhancheng"
+                wifi_passwd = "nanjingzhancheng"
+                device1_element, device2_element, device3_element, device4_element = False, False, False, False
+                device1_result, device2_result, device3_result, device4_result = None, None, None, None
+                try:
+                    device1_element = WebDriverWait(driver, 10).until(
+                        ec.visibility_of_element_located((By.XPATH, f'//android.widget.TextView['
+                                                                    f'@resource-id="com.ost.pintura:id/tv_name" and '
+                                                                    f'@text="{device1}"]'))
+                    )
+                    device1_element.click()
+                    wait.until((ec.staleness_of(device1_element)))
+                    self.logger.info(f"找到设备：{device1}")
+                except selenium.common.exceptions.TimeoutException:
+                    self.logger.error(f"未找到设备：{device1}")
 
-            try:
-                device2_element = WebDriverWait(driver, 10).until(
-                    ec.visibility_of_element_located((By.XPATH, f'//android.widget.TextView['
-                                                                '@resource-id="com.ost.pintura:id/tv_name" and '
-                                                                f'@text="{device2}"]'))
-                )
-                device2_element.click()
-                wait.until((ec.staleness_of(device2_element)))
-                self.logger.info(f"找到设备：{device2}")
-            except selenium.common.exceptions.TimeoutException:
-                self.logger.error(f"未找到设备：{device2}")
+                try:
+                    device2_element = WebDriverWait(driver, 10).until(
+                        ec.visibility_of_element_located((By.XPATH, f'//android.widget.TextView['
+                                                                    '@resource-id="com.ost.pintura:id/tv_name" and '
+                                                                    f'@text="{device2}"]'))
+                    )
+                    device2_element.click()
+                    wait.until((ec.staleness_of(device2_element)))
+                    self.logger.info(f"找到设备：{device2}")
+                except selenium.common.exceptions.TimeoutException:
+                    self.logger.error(f"未找到设备：{device2}")
 
-            try:
-                device3_element = WebDriverWait(driver, 10).until(
-                    ec.visibility_of_element_located((By.XPATH, f'//android.widget.TextView['
-                                                                '@resource-id="com.ost.pintura:id/tv_name" and '
-                                                                f'@text="{device3}"]'))
-                )
-                device3_element.click()
-                wait.until((ec.staleness_of(device3_element)))
-                self.logger.info(f"找到设备：{device3}")
-            except selenium.common.exceptions.TimeoutException:
-                self.logger.error(f"未找到设备：{device3}")
+                try:
+                    device3_element = WebDriverWait(driver, 10).until(
+                        ec.visibility_of_element_located((By.XPATH, f'//android.widget.TextView['
+                                                                    '@resource-id="com.ost.pintura:id/tv_name" and '
+                                                                    f'@text="{device3}"]'))
+                    )
+                    device3_element.click()
+                    wait.until((ec.staleness_of(device3_element)))
+                    self.logger.info(f"找到设备：{device3}")
+                except selenium.common.exceptions.TimeoutException:
+                    self.logger.error(f"未找到设备：{device3}")
 
-            try:
-                device4_element = WebDriverWait(driver, 10).until(
-                    ec.visibility_of_element_located((By.XPATH, f'//android.widget.TextView['
-                                                                '@resource-id="com.ost.pintura:id/tv_name" and '
-                                                                f'@text="{device4}"]'))
-                )
-                device4_element.click()
-                self.logger.info(f"找到设备：{device4}")
-            except selenium.common.exceptions.TimeoutException:
-                self.logger.error(f"未找到设备：{device4}")
-            if not (device1_element and device2_element and device3_element and device4_element):
-                self.logger.error("存在了设备蓝牙丢失，请打开后输入 continue 继续")
-                is_continue = False
-                while True:
-                    user_input = input("请手动打开丢失蓝牙信号设备的蓝牙并输入 continue 继续, 输入 stop 停止脚本")
-                    if user_input == "continue":
-                        driver.press_keycode(4)
-                        is_continue = True
-                        try:
-                            product_selector = WebDriverWait(driver, 10).until(
-                                ec.visibility_of_element_located((By.XPATH,
+                try:
+                    device4_element = WebDriverWait(driver, 10).until(
+                        ec.visibility_of_element_located((By.XPATH, f'//android.widget.TextView['
+                                                                    '@resource-id="com.ost.pintura:id/tv_name" and '
+                                                                    f'@text="{device4}"]'))
+                    )
+                    device4_element.click()
+                    self.logger.info(f"找到设备：{device4}")
+                except selenium.common.exceptions.TimeoutException:
+                    self.logger.error(f"未找到设备：{device4}")
+                if not (device1_element and device2_element and device3_element and device4_element):
+                    self.logger.error("存在了设备蓝牙丢失，请打开后输入 continue 继续")
+                    is_continue = False
+                    while True:
+                        user_input = input("请手动打开丢失蓝牙信号设备的蓝牙并输入 continue 继续, 输入 stop 停止脚本")
+                        if user_input == "continue":
+                            driver.press_keycode(4)
+                            is_continue = True
+                            try:
+                                product_selector = WebDriverWait(driver, 10).until(
+                                    ec.visibility_of_element_located((By.XPATH,
 
-                                                                  '//android.webkit.WebView[@text="pages/work/addAhost1[4]"]/android.view.View[3]'))
+                                                                      '//android.webkit.WebView[@text="pages/work/addAhost1[4]"]/android.view.View[3]'))
+                                )
+                                product_selector.click()
+                            except selenium.common.exceptions.TimeoutException:
+                                self.logger.error("未找到产品选择按钮")
+                            break
+                        if user_input == "stop":
+                            total_successful_rate = round((count - fail_count - one_time_setup_successful) / count * 100, 2)
+                            with open(file_name, "a", encoding=encoding) as f:
+                                f.write(f"总的成功率:{total_successful_rate}%\n")
+                            sys.exit(0)
+                        else:
+                            print("输入错误，请重新输入")
+                    if is_continue:
+                        continue
+
+                start_setup_button = WebDriverWait(driver, 10).until(
+                    ec.visibility_of_element_located((By.ID, 'com.ost.pintura:id/btn_next'))
+                )
+                start_setup_button.click()
+                # 等待页面加载完成
+                try:
+                    result = WebDriverWait(driver, 15).until(
+                        ec.invisibility_of_element_located((By.CLASS_NAME, 'android.widget.ImageView'))
+                    )
+                except selenium.common.exceptions.TimeoutException:
+                    self.logger.error("未找到页面刷新元素标记")
+                    break
+                if result:
+                    self.logger.info("页面刷新完成")
+                    try:
+                        wifi_list = WebDriverWait(driver, 10).until(
+                            ec.visibility_of_element_located((By.XPATH,
+                                                              '//android.view.ViewGroup[@resource-id="com.ost.pintura:id/swipe_layout"]/android.widget.LinearLayout/android.widget.FrameLayout[1]/android.view.View[2]'))
+                        )
+                        wifi_list.click()
+                        driver.implicitly_wait(1)
+                    except selenium.common.exceptions.TimeoutException:
+                        self.logger.error("未找到wifi列表")
+
+                # 选择WiFi
+                try:
+                    wifi = WebDriverWait(driver, 10).until(
+                        ec.visibility_of_element_located((By.XPATH, f'//android.widget.TextView[@text="{wifi_name}"]'))
+                    )
+                    wifi.click()
+                    self.logger.info(f"已选择WiFi：{wifi_name}")
+                except selenium.common.exceptions.TimeoutException:
+                    self.logger.error(f"未找到wifi：{wifi_name}")
+
+                try:
+                    wifi_passwd_element = WebDriverWait(driver, 10).until(
+                        ec.visibility_of_element_located((By.ID, 'com.ost.pintura:id/et_pwd'))
+                    )
+                    wifi_passwd_element.send_keys(wifi_passwd)
+                    self.logger.info(f"已输入密码：{wifi_passwd}")
+                except selenium.common.exceptions.TimeoutException:
+                    self.logger.error(f"未找到密码输入框")
+                try:
+                    connect_button = WebDriverWait(driver, 10).until(
+                        ec.visibility_of_element_located((By.ID, 'com.ost.pintura:id/btn_ok'))
+                    )
+                    connect_button.click()
+                    self.logger.info(f"开始配网..............")
+                except selenium.common.exceptions.TimeoutException:
+                    self.logger.error(f"未找到连接按钮")
+                # 记录开始时间
+                start_time = time.time()
+
+                # 等待配网成功
+                try:
+                    device1_complete = WebDriverWait(driver, 60).until(
+                        ec.any_of(
+                            ec.text_to_be_present_in_element(
+                                (By.XPATH, f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
+                                           f'@text="{device1}"]/following-sibling::*[1]'), "配网成功"
+                            ),
+                            ec.text_to_be_present_in_element(
+                                (By.XPATH, f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
+                                           f'@text="{device1}"]/following-sibling::*[1]'), "连接失败"
                             )
-                            product_selector.click()
+                        )
+                    )
+                    device2_complete = WebDriverWait(driver, 60).until(
+                        ec.any_of(
+                            ec.text_to_be_present_in_element(
+                                (By.XPATH, f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
+                                           f'@text="{device2}"]/following-sibling::*[1]'), "配网成功"
+                            ),
+                            ec.text_to_be_present_in_element(
+                                (By.XPATH, f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
+                                           f'@text="{device2}"]/following-sibling::*[1]'), "连接失败"
+                            )
+                        )
+                    )
+                    device3_complete = WebDriverWait(driver, 60).until(
+                        ec.any_of(
+                            ec.text_to_be_present_in_element(
+                                (By.XPATH, f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
+                                           f'@text="{device3}"]/following-sibling::*[1]'), "配网成功"
+                            ),
+                            ec.text_to_be_present_in_element(
+                                (By.XPATH, f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
+                                           f'@text="{device3}"]/following-sibling::*[1]'), "连接失败"
+                            )
+                        )
+                    )
+                    device4_complete = WebDriverWait(driver, 60).until(
+                        ec.any_of(
+                            ec.text_to_be_present_in_element(
+                                (By.XPATH, f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
+                                           f'@text="{device4}"]/following-sibling::*[1]'), "配网成功"
+                            ),
+                            ec.text_to_be_present_in_element(
+                                (By.XPATH, f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
+                                           f'@text="{device4}"]/following-sibling::*[1]'), "连接失败"
+                            )
+                        )
+                    )
+                except selenium.common.exceptions.TimeoutException:
+                    self.logger.error("配网超时")
+                    break
+                # 统计配网成功数量以及四台设备配网所需完成实际时间
+                if device1_complete and device2_complete and device3_complete and device4_complete:
+                    end_time = time.time()
+                    self.logger.info(f"第{count+1}次配网已完成")
+                    # 总用时
+                    total_time = round(end_time - start_time, 2)
+                    self.logger.info(f"总用时：{total_time}s")
+                    # 重新获取元素
+                    device1_complete = WebDriverWait(driver, 10).until(
+                        ec.visibility_of_element_located((By.XPATH,
+                                                          f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and @text="{device1}"]/following-sibling::*[1]'))
+                    )
+                    device2_complete = WebDriverWait(driver, 10).until(
+                        ec.visibility_of_element_located((By.XPATH,
+                                                          f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and @text="{device2}"]/following-sibling::*[1]'))
+                    )
+                    device3_complete = WebDriverWait(driver, 10).until(
+                        ec.visibility_of_element_located((By.XPATH,
+                                                          f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and @text="{device3}"]/following-sibling::*[1]'))
+                    )
+                    device4_complete = WebDriverWait(driver, 10).until(
+                        ec.visibility_of_element_located((By.XPATH,
+                                                          f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and @text="{device4}"]/following-sibling::*[1]'))
+                    )
+                    device1_result = device1_complete.text
+                    self.logger.info(device1_result)
+                    device2_result = device2_complete.text
+                    self.logger.info(device2_result)
+                    device3_result = device3_complete.text
+                    self.logger.info(device3_result)
+                    device4_result = device4_complete.text
+                    self.logger.info(device4_result)
+                    device_results = [device1_result, device2_result, device3_result, device4_result]
+                    # 统计每一次配网成功的设备数量
+                    for result in device_results:
+                        if result == "配网成功":
+                            devices_successful += 1
+                    if device1_result == device2_result == device3_result == device4_result == "配网成功":
+                        one_time_setup_successful += 1
+                    self.logger.info(
+                        f"配网成功的设备数量：{devices_successful}，失败的设备数量：{devices_num - devices_successful}")
+                    count += 1
+                    # 处理配网失败的设备
+                    second_try_result1 = second_try_result2 = second_try_result3 = second_try_result4 = ""
+                    if device1_result == "连接失败":
+                        self.logger.info(f"{device1}配网失败，尝试重连")
+                        try:
+                            WebDriverWait(driver, 10).until(
+                                ec.visibility_of_element_located((By.XPATH,
+                                                                  f'//android.widget.TextView['
+                                                                  f'@resource-id="com.ost.pintura:id/tv_name" and @text="{device1}"]/following-sibling::*[2]'))
+                            ).click()
+                            self.logger.info("点击重连")
+                        except selenium.common.exceptions.NoSuchElementException:
+                            self.logger.error("找不到配网失败的设备")
+                        # 等待重新配网完成
+                        try:
+                            device1_complete = WebDriverWait(driver, 60).until(
+                                ec.any_of(
+                                    ec.text_to_be_present_in_element(
+                                        (By.XPATH,
+                                         f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
+                                         f'@text="{device1}"]/following-sibling::*[1]'), "配网成功"
+                                    ),
+                                    ec.text_to_be_present_in_element(
+                                        (By.XPATH,
+                                         f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
+                                         f'@text="{device1}"]/following-sibling::*[1]'), "连接失败"
+                                    )
+                                )
+                            )
                         except selenium.common.exceptions.TimeoutException:
-                            self.logger.error("未找到产品选择按钮")
-                        break
-                    if user_input == "stop":
-                        total_successful_rate = round((count - fail_count - one_time_setup_successful) / count * 100, 2)
-                        with open(file_name, "a", encoding=encoding) as f:
-                            f.write(f"总的成功率:{total_successful_rate}%\n")
-                        sys.exit(0)
-                    else:
-                        print("输入错误，请重新输入")
-                if is_continue:
-                    continue
+                            self.logger.error("二次配网超时")
+                        # 重新获取元素并取得文本
+                        if device1_complete:
+                            self.logger.info("二次配网完成，获取元素文本")
+                            result_text = WebDriverWait(driver, 10).until(
+                                ec.visibility_of_element_located((By.XPATH,
+                                                                  f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and @text="{device1}"]/following-sibling::*[1]'))
+                            ).text
+                            if result_text == "配网成功":
+                                self.logger.info("二次配网成功")
+                                second_try_result1 = "二次配网成功"
+                            else:
+                                self.logger.info("二次配网失败")
+                                second_try_result1 = "二次配网失败"
 
-            start_setup_button = WebDriverWait(driver, 10).until(
-                ec.visibility_of_element_located((By.ID, 'com.ost.pintura:id/btn_next'))
-            )
-            start_setup_button.click()
-            # 等待页面加载完成
-            try:
-                result = WebDriverWait(driver, 15).until(
-                    ec.invisibility_of_element_located((By.CLASS_NAME, 'android.widget.ImageView'))
-                )
-            except selenium.common.exceptions.TimeoutException:
-                self.logger.error("未找到页面刷新元素标记")
-                break
-            if result:
-                self.logger.info("页面刷新完成")
-                try:
-                    wifi_list = WebDriverWait(driver, 10).until(
-                        ec.visibility_of_element_located((By.XPATH,
-                                                          '//android.view.ViewGroup[@resource-id="com.ost.pintura:id/swipe_layout"]/android.widget.LinearLayout/android.widget.FrameLayout[1]/android.view.View[2]'))
-                    )
-                    wifi_list.click()
-                    driver.implicitly_wait(1)
-                except selenium.common.exceptions.TimeoutException:
-                    self.logger.error("未找到wifi列表")
+                    if device2_result == "连接失败":
+                        self.logger.info(f"{device2}配网失败，尝试重连")
+                        try:
+                            WebDriverWait(driver, 10).until(
+                                ec.visibility_of_element_located((By.XPATH,
+                                                                  f'//android.widget.TextView['
+                                                                  f'@resource-id="com.ost.pintura:id/tv_name" and '
+                                                                  f'@text="{device2}"]/following-sibling::*[2]'))
+                            ).click()
+                            self.logger.info("点击重连")
+                        except selenium.common.exceptions.NoSuchElementException:
+                            self.logger.error("找不到配网失败的设备")
+                        # 等待重新配网完成
+                        try:
+                            device2_complete = WebDriverWait(driver, 60).until(
+                                ec.any_of(
+                                    ec.text_to_be_present_in_element(
+                                        (By.XPATH,
+                                         f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
+                                         f'@text="{device2}"]/following-sibling::*[1]'), "配网成功"
+                                    ),
+                                    ec.text_to_be_present_in_element(
+                                        (By.XPATH,
+                                         f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
+                                         f'@text="{device2}"]/following-sibling::*[1]'), "连接失败"
+                                    )
+                                )
+                            )
+                        except selenium.common.exceptions.TimeoutException:
+                            self.logger.error("二次配网超时")
+                        # 重新获取元素并取得文本
+                        if device2_complete:
+                            self.logger.info("二次配网完成，获取元素文本")
+                            result_text = WebDriverWait(driver, 10).until(
+                                ec.visibility_of_element_located((By.XPATH,
+                                                                  f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and @text="{device2}"]/following-sibling::*[1]'))
+                            ).text
+                            if result_text == "配网成功":
+                                self.logger.info("二次配网成功")
+                                second_try_result2 = "二次配网成功"
+                            else:
+                                self.logger.info("二次配网失败")
+                                second_try_result2 = "二次配网失败"
 
-            # 选择WiFi
-            try:
-                wifi = WebDriverWait(driver, 10).until(
-                    ec.visibility_of_element_located((By.XPATH, f'//android.widget.TextView[@text="{wifi_name}"]'))
-                )
-                wifi.click()
-                self.logger.info(f"已选择WiFi：{wifi_name}")
-            except selenium.common.exceptions.TimeoutException:
-                self.logger.error(f"未找到wifi：{wifi_name}")
+                    if device3_result == "连接失败":
+                        self.logger.info(f"{device3}配网失败，尝试重连")
+                        try:
+                            WebDriverWait(driver, 10).until(
+                                ec.visibility_of_element_located((By.XPATH,
+                                                                  f'//android.widget.TextView['
+                                                                  f'@resource-id="com.ost.pintura:id/tv_name" and '
+                                                                  f'@text="{device3}"]/following-sibling::*[2]'))
+                            ).click()
+                            self.logger.info("点击重连")
+                        except selenium.common.exceptions.NoSuchElementException:
+                            self.logger.error("找不到配网失败的设备")
+                        # 等待重新配网完成
+                        try:
+                            device3_complete = WebDriverWait(driver, 60).until(
+                                ec.any_of(
+                                    ec.text_to_be_present_in_element(
+                                        (By.XPATH,
+                                         f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
+                                         f'@text="{device3}"]/following-sibling::*[1]'), "配网成功"
+                                    ),
+                                    ec.text_to_be_present_in_element(
+                                        (By.XPATH,
+                                         f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
+                                         f'@text="{device3}"]/following-sibling::*[1]'), "连接失败"
+                                    )
+                                )
+                            )
+                        except selenium.common.exceptions.TimeoutException:
+                            self.logger.error("二次配网超时")
+                        # 重新获取元素并取得文本
+                        if device3_complete:
+                            self.logger.info("二次配网完成，获取元素文本")
+                            result_text = WebDriverWait(driver, 10).until(
+                                ec.visibility_of_element_located((By.XPATH,
+                                                                  f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and @text="{device3}"]/following-sibling::*[1]'))
+                            ).text
+                            if result_text == "配网成功":
+                                self.logger.info("二次配网成功")
+                                second_try_result3 = "二次配网成功"
+                            else:
+                                self.logger.info("二次配网失败")
+                                second_try_result3 = "二次配网失败"
 
-            try:
-                wifi_passwd_element = WebDriverWait(driver, 10).until(
-                    ec.visibility_of_element_located((By.ID, 'com.ost.pintura:id/et_pwd'))
-                )
-                wifi_passwd_element.send_keys(wifi_passwd)
-                self.logger.info(f"已输入密码：{wifi_passwd}")
-            except selenium.common.exceptions.TimeoutException:
-                self.logger.error(f"未找到密码输入框")
-            try:
-                connect_button = WebDriverWait(driver, 10).until(
-                    ec.visibility_of_element_located((By.ID, 'com.ost.pintura:id/btn_ok'))
-                )
-                connect_button.click()
-                self.logger.info(f"开始配网..............")
-            except selenium.common.exceptions.TimeoutException:
-                self.logger.error(f"未找到连接按钮")
-            # 记录开始时间
-            start_time = time.time()
+                    if device4_result == "连接失败":
+                        self.logger.info(f"{device4}配网失败，尝试重连")
+                        try:
+                            WebDriverWait(driver, 10).until(
+                                ec.visibility_of_element_located((By.XPATH,
+                                                                  f'//android.widget.TextView['
+                                                                  f'@resource-id="com.ost.pintura:id/tv_name" and '
+                                                                  f'@text="{device4}"]/following-sibling::*[2]'))
+                            ).click()
+                            self.logger.info("点击重连")
+                        except selenium.common.exceptions.NoSuchElementException:
+                            self.logger.error("找不到配网失败的设备")
+                        # 等待重新配网完成
+                        try:
+                            device4_complete = WebDriverWait(driver, 60).until(
+                                ec.any_of(
+                                    ec.text_to_be_present_in_element(
+                                        (By.XPATH,
+                                         f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
+                                         f'@text="{device4}"]/following-sibling::*[1]'), "配网成功"
+                                    ),
+                                    ec.text_to_be_present_in_element(
+                                        (By.XPATH,
+                                         f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
+                                         f'@text="{device4}"]/following-sibling::*[1]'), "连接失败"
+                                    )
+                                )
+                            )
+                        except selenium.common.exceptions.TimeoutException:
+                            self.logger.error("二次配网超时")
+                        # 重新获取元素并取得文本
+                        if device4_complete:
+                            self.logger.info("二次配网完成，获取元素文本")
+                            result_text = WebDriverWait(driver, 10).until(
+                                ec.visibility_of_element_located((By.XPATH,
+                                                                  f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and @text="{device4}"]/following-sibling::*[1]'))
+                            ).text
+                            if result_text == "配网成功":
+                                self.logger.info("二次配网成功")
+                                second_try_result4 = "二次配网成功"
+                            else:
+                                self.logger.info("二次配网失败")
+                                second_try_result4 = "二次配网失败"
+                    # 生成配网结果文件
+                    with open(file_name, "a", encoding=encoding) as f:
+                        f.write(f"第{count}次配网：{device1}-{device1_result}\t{second_try_result1}\t{device2}"
+                                f"-{device2_result}\t{second_try_result2}\t{device3}-"
+                                f"{device3_result}\t{second_try_result3}\t{device4}-{device4_result}\t{second_try_result4}\t耗时"
+                                f"：{total_time}s\n")
+                    # 如果存在配网失败的设备，则截图
+                    if device1_result == "连接失败" or device2_result == "连接失败" or device3_result == "连接失败" or device4_result == \
+                            "连接失败":
+                        self.logger.info("发现配网失败的设备，将进行截图")
+                        self.screenshot_diy(f"{count}次配网截图.png")
+                    # 返回产品选择界面
+                    driver.press_keycode(4)
+                    driver.press_keycode(4)
+                    driver.press_keycode(4)
+                    try:
+                        product_selector = WebDriverWait(driver, 10).until(
+                            ec.visibility_of_element_located((By.XPATH,
 
-            # 等待配网成功
-            try:
-                device1_complete = WebDriverWait(driver, 60).until(
-                    ec.any_of(
-                        ec.text_to_be_present_in_element(
-                            (By.XPATH, f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
-                                       f'@text="{device1}"]/following-sibling::*[1]'), "配网成功"
-                        ),
-                        ec.text_to_be_present_in_element(
-                            (By.XPATH, f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
-                                       f'@text="{device1}"]/following-sibling::*[1]'), "连接失败"
+                                                              '//android.webkit.WebView[@text="pages/work/addAhost1[4]"]/android.view.View[3]'))
                         )
-                    )
-                )
-                device2_complete = WebDriverWait(driver, 60).until(
-                    ec.any_of(
-                        ec.text_to_be_present_in_element(
-                            (By.XPATH, f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
-                                       f'@text="{device2}"]/following-sibling::*[1]'), "配网成功"
-                        ),
-                        ec.text_to_be_present_in_element(
-                            (By.XPATH, f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
-                                       f'@text="{device2}"]/following-sibling::*[1]'), "连接失败"
-                        )
-                    )
-                )
-                device3_complete = WebDriverWait(driver, 60).until(
-                    ec.any_of(
-                        ec.text_to_be_present_in_element(
-                            (By.XPATH, f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
-                                       f'@text="{device3}"]/following-sibling::*[1]'), "配网成功"
-                        ),
-                        ec.text_to_be_present_in_element(
-                            (By.XPATH, f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
-                                       f'@text="{device3}"]/following-sibling::*[1]'), "连接失败"
-                        )
-                    )
-                )
-                device4_complete = WebDriverWait(driver, 60).until(
-                    ec.any_of(
-                        ec.text_to_be_present_in_element(
-                            (By.XPATH, f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
-                                       f'@text="{device4}"]/following-sibling::*[1]'), "配网成功"
-                        ),
-                        ec.text_to_be_present_in_element(
-                            (By.XPATH, f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
-                                       f'@text="{device4}"]/following-sibling::*[1]'), "连接失败"
-                        )
-                    )
-                )
-            except selenium.common.exceptions.TimeoutException:
-                self.logger.error("配网超时")
-                break
-            # 统计配网成功数量以及四台设备配网所需完成实际时间
-            if device1_complete and device2_complete and device3_complete and device4_complete:
-                end_time = time.time()
-                self.logger.info(f"第{count}次配网已完成")
-                # 总用时
-                total_time = round(end_time - start_time, 2)
-                self.logger.info(f"总用时：{total_time}s")
-                # 重新获取元素
-                device1_complete = WebDriverWait(driver, 10).until(
-                    ec.visibility_of_element_located((By.XPATH,
-                                                      f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and @text="{device1}"]/following-sibling::*[1]'))
-                )
-                device2_complete = WebDriverWait(driver, 10).until(
-                    ec.visibility_of_element_located((By.XPATH,
-                                                      f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and @text="{device2}"]/following-sibling::*[1]'))
-                )
-                device3_complete = WebDriverWait(driver, 10).until(
-                    ec.visibility_of_element_located((By.XPATH,
-                                                      f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and @text="{device3}"]/following-sibling::*[1]'))
-                )
-                device4_complete = WebDriverWait(driver, 10).until(
-                    ec.visibility_of_element_located((By.XPATH,
-                                                      f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and @text="{device4}"]/following-sibling::*[1]'))
-                )
-                device1_result = device1_complete.text
-                self.logger.info(device1_result)
-                device2_result = device2_complete.text
-                self.logger.info(device2_result)
-                device3_result = device3_complete.text
-                self.logger.info(device3_result)
-                device4_result = device4_complete.text
-                self.logger.info(device4_result)
-                device_results = [device1_result, device2_result, device3_result, device4_result]
-                for result in device_results:
-                    if result == "配网成功":
-                        devices_successful += 1
-                if device1_result == device2_result == device3_result == device4_result == "配网成功":
-                    one_time_setup_successful += 1
-                self.logger.info(
-                    f"配网成功的设备数量：{devices_successful}，失败的设备数量：{devices_num - devices_successful}")
-                count += 1
-                # 生成配网结果文件
-                with open(file_name, "a", encoding=encoding) as f:
-                    f.write(f"第{count}次配网：{device1}-{device1_result}\t{device2}-{device2_result}\t{device3}-"
-                            f"{device3_result}\t{device4}-{device4_result}\t耗时：{total_time}s\n")
-                # 如果存在配网失败的设备，则截图
-                if device1_result == "连接失败" or device2_result == "连接失败" or device3_result == "连接失败" or device4_result == \
-                        "连接失败":
-                    self.logger.info("发现配网失败的设备，将进行截图")
-                    self.screenshot_diy(f"{count}次配网截图.png")
-                # 返回产品选择界面
-                driver.press_keycode(4)
-                driver.press_keycode(4)
-                driver.press_keycode(4)
-                try:
-                    product_selector = WebDriverWait(driver, 10).until(
-                        ec.visibility_of_element_located((By.XPATH,
-
-                                                          '//android.webkit.WebView[@text="pages/work/addAhost1[4]"]/android.view.View[3]'))
-                    )
-                    product_selector.click()
-                except selenium.common.exceptions.TimeoutException:
-                    self.logger.error("未找到产品选择按钮")
-            if count == circle_times:
-                self.logger.info(f"已测试{circle_times}次，程序即将退出")
-                break
+                        product_selector.click()
+                    except selenium.common.exceptions.TimeoutException:
+                        self.logger.error("未找到产品选择按钮")
+                if count == circle_times:
+                    self.logger.info(f"已测试{circle_times}次，程序即将退出")
+                    break
+        else:
+            self.logger.error(f"{file_name}文件中的配网次数已超过配网次数上限，即将退出程序")
+            sys.exit()
 
         # 统计总的成功率
         total_successful_rate = round((count - fail_count - one_time_setup_successful) / count * 100, 2)
