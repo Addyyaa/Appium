@@ -70,15 +70,12 @@ class bluetooth_pairing_test:
             print(f"找不到文件：{file_name}")
         except Exception as e:
             print(f"发生错误：{e}")
-        else:
-            # 如果文件不为空，使用 line_number 获取最后一次配网次数
-            if line_number > 0:
-                last_attempt = line_number
 
-            # 打印统计结果
-            print(f"连接失败的次数：{fail_count}")
-            print(f"最后一次配网次数：{last_attempt}")
-            return fail_count, last_attempt
+
+        # 打印统计结果
+        print(f"连接失败的次数：{fail_count}")
+        print(f"最后一次配网次数：{last_attempt}")
+        return fail_count, last_attempt
 
     def enter_bluetooth_setup_interface(self, driver):
         try:
@@ -128,9 +125,11 @@ class bluetooth_pairing_test:
         devices_num = 4
         encoding = 'utf-8'
         file_name = file_name
+        current_iteration = 0
         # 循环配网，直到 circle_times 次
         if remaining_iterations > 0:
             for i in range(remaining_iterations):
+                current_iteration += 1
                 devices_successful = 0
                 device1 = "Pintura-blt-L000892"
                 device2 = "Pintura-blt-Ltest20"
@@ -570,9 +569,10 @@ class bluetooth_pairing_test:
             sys.exit()
 
         # 统计总的成功率
-        total_successful_rate = round((count - fail_count - one_time_setup_successful) / count * 100, 2)
+        total_successful_rate = round((count - fail_count - (current_iteration-one_time_setup_successful)) / count * 100, 2)
         self.logger.info(
-            f"总计配网:{count}次，成功:{count - fail_count - one_time_setup_successful}次，失败:{fail_count + one_time_setup_successful}次")
+            f"本次运行总计配网:{current_iteration}次，成功:{one_time_setup_successful}次，失败"
+            f":{current_iteration-one_time_setup_successful}次")
         self.logger.info(f"总的成功率:{total_successful_rate}%")
         # 生成配网结果文件
         fail_count, count = self.test_result_statistics(file_name)

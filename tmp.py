@@ -1,5 +1,5 @@
 # 定义文件名
-file_name = "配网结果.txt"
+file_name = "配网结果1.txt"
 
 # 初始化计数器和最后一次配网次数
 fail_count = 0
@@ -24,11 +24,8 @@ except FileNotFoundError:
     print(f"找不到文件：{file_name}")
 except Exception as e:
     print(f"发生错误：{e}")
-else:
-    # 如果文件不为空，使用 line_number 获取最后一次配网次数
-    if line_number > 0:
-        last_attempt = line_number
 
-    # 打印统计结果
-    print(f"连接失败的次数：{fail_count}")
-    print(f"最后一次配网次数：{last_attempt}")
+
+# 打印统计结果
+print(f"连接失败的次数：{fail_count}")
+print(f"最后一次配网次数：{last_attempt}")
