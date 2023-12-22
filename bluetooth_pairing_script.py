@@ -1,5 +1,5 @@
 import os
-
+import pandas
 import LoginPage
 from Init import get_driver
 from VersionSelection import VersionSelection
@@ -141,7 +141,7 @@ class bluetooth_pairing_test:
         if total_succecc_rate_no is not None:
             self.delete_line_by_number(file_name, total_succecc_rate_no)
         one_time_setup_successful = 0
-        circle_times = 200
+        circle_times = 165
         remaining_iterations = circle_times - count
         devices_num = 4
         encoding = 'utf-8'
@@ -590,6 +590,7 @@ class bluetooth_pairing_test:
             sys.exit()
 
         # 统计总的成功率
+        fail_count, count, total_succecc_rate_no = self.test_result_statistics(file_name)
         self.logger.info(f"count = {count}，remaining_iterations={remaining_iterations}, circle_times={circle_times}")
         total_successful_rate = round((count - fail_count - (current_iteration-one_time_setup_successful)) / count * 100, 2)
         self.logger.info(
@@ -597,7 +598,7 @@ class bluetooth_pairing_test:
             f":{current_iteration-one_time_setup_successful}次")
         self.logger.info(f"总的成功率:{total_successful_rate}%")
         # 生成配网结果文件
-        fail_count, count, total_succecc_rate_no = self. test_result_statistics(file_name)
+
         with open(file_name, "a", encoding=encoding) as f:
             f.write(f"总的成功率:{total_successful_rate}%\n")
         if count != circle_times:
