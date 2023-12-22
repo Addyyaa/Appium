@@ -50,13 +50,13 @@ class bluetooth_pairing_test:
         # 初始化计数器和最后一次配网次数
         fail_count = 0
         last_attempt = 0
+        total_succecc_rate_no = None
         # 尝试打开文件
         try:
             with open(file_name, 'r', encoding='utf-8') as file:
                 # 逐行读取文件内容
                 lines = file.readlines()
                 fail_count = 0
-                line_number = 0
 
                 # 遍历每一行
                 for line_number, line in enumerate(lines, start=1):
@@ -66,6 +66,8 @@ class bluetooth_pairing_test:
                     # 获取最后一次配网次数
                     if line.startswith("第") and "次配网" in line:
                         last_attempt = int(line.split("次")[0][1:])
+                    if "总的成功率" in line:
+                        total_succecc_rate_no = line_number
         except FileNotFoundError:
             print(f"找不到文件：{file_name}")
         except Exception as e:
@@ -75,7 +77,24 @@ class bluetooth_pairing_test:
         # 打印统计结果
         print(f"连接失败的次数：{fail_count}")
         print(f"最后一次配网次数：{last_attempt}")
-        return fail_count, last_attempt
+        return fail_count, last_attempt, total_succecc_rate_no
+
+    def delete_line_by_number(self, file_path, line_number):
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                lines = file.readlines()
+
+            # 删除指定行
+            if 1 <= line_number <= len(lines):
+                del lines[line_number - 1]
+
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.writelines(lines)
+
+        except FileNotFoundError:
+            print(f"找不到文件：{file_path}")
+        except Exception as e:
+            print(f"发生错误：{e}")
 
     def enter_bluetooth_setup_interface(self, driver):
         try:
@@ -117,8 +136,10 @@ class bluetooth_pairing_test:
         sleep(5)
 
         file_name = "配网结果.txt"
-        fail_count, count = self.test_result_statistics(file_name=file_name)
-        # TODO 需要优化 count次数会根据文件已有的次数自动变化
+        fail_count, count,  total_succecc_rate_no= self.test_result_statistics(file_name=file_name)
+        # 删除total_succecc_rate_no行，避免重行
+        if total_succecc_rate_no is not None:
+            self.delete_line_by_number(file_name, total_succecc_rate_no)
         one_time_setup_successful = 0
         circle_times = 100
         remaining_iterations = circle_times - count
@@ -576,7 +597,7 @@ class bluetooth_pairing_test:
             f":{current_iteration-one_time_setup_successful}次")
         self.logger.info(f"总的成功率:{total_successful_rate}%")
         # 生成配网结果文件
-        fail_count, count = self.test_result_statistics(file_name)
+        fail_count, count, total_succecc_rate_no = self. test_result_statistics(file_name)
         with open(file_name, "a", encoding=encoding) as f:
             f.write(f"总的成功率:{total_successful_rate}%\n")
         if count != circle_times:
