@@ -141,7 +141,7 @@ class bluetooth_pairing_test:
         if total_succecc_rate_no is not None:
             self.delete_line_by_number(file_name, total_succecc_rate_no)
         one_time_setup_successful = 0
-        circle_times = 100
+        circle_times = 200
         remaining_iterations = circle_times - count
         devices_num = 4
         encoding = 'utf-8'
@@ -603,6 +603,8 @@ class bluetooth_pairing_test:
         if count != circle_times:
             self.logger.info(f"由于异常原因导致还差{circle_times - count}次配网，程序即将退出")
             sys.exit()
+        # 关闭会话防止手机端出错
+        driver.quit()
 
 
 te = bluetooth_pairing_test()
