@@ -1,5 +1,5 @@
 import os
-import pandas
+import pandas as pd
 import LoginPage
 from Init import get_driver
 from VersionSelection import VersionSelection
@@ -13,6 +13,7 @@ import selenium.common.exceptions
 from time import sleep
 import time
 import sys
+import numpy as np
 
 
 class bluetooth_pairing_test:
@@ -149,17 +150,19 @@ class bluetooth_pairing_test:
         current_iteration = 0
         # 循环配网，直到 circle_times 次
         if remaining_iterations > 0:
+            device1 = "Pintura-blt-L000892"
+            device2 = "Pintura-blt-Ltest20"
+            device3 = "Pintura-blt-L000308"
+            device4 = "Pintura-blt-L000329"
+            wifi_name = "zhancheng"
+            wifi_passwd = "nanjingzhancheng"
+            device1_element, device2_element, device3_element, device4_element = False, False, False, False
+            device1_result, device2_result, device3_result, device4_result = None, None, None, None
+            column_names = [device1, device2, device3, device4, "耗时（S）"]
+            pairing_result = pd.DataFrame(columns=column_names)
             for i in range(remaining_iterations):
                 current_iteration += 1
                 devices_successful = 0
-                device1 = "Pintura-blt-L000892"
-                device2 = "Pintura-blt-Ltest20"
-                device3 = "Pintura-blt-L000308"
-                device4 = "Pintura-blt-L000329"
-                wifi_name = "zhancheng"
-                wifi_passwd = "nanjingzhancheng"
-                device1_element, device2_element, device3_element, device4_element = False, False, False, False
-                device1_result, device2_result, device3_result, device4_result = None, None, None, None
                 try:
                     device1_element = WebDriverWait(driver, 10).until(
                         ec.visibility_of_element_located((By.XPATH, f'//android.widget.TextView['
@@ -563,12 +566,35 @@ class bluetooth_pairing_test:
                             else:
                                 self.logger.info("二次配网失败")
                                 second_try_result4 = "二次配网失败"
+                    # 生成excel对象
+                    if device1_result == "配网成功":
+                        device1_excel_result = "√"
+                    elif device1_result == "连接失败":
+                        device1_excel_result = "×"
+                    if device2_result == "配网成功":
+                        device2_excel_result = "√"
+                    elif device2_result == "连接失败":
+                        device2_excel_result = "×"
+                    if device3_result == "配网成功":
+                        device3_excel_result = "√"
+                    elif device3_result == "连接失败":
+                        device3_excel_result = "×"
+                    if device4_result == "配网成功":
+                        device4_excel_result = "√"
+                    elif device4_result == "连接失败":
+                        device4_excel_result = "×"
+
+
+                    pairing_result.iloc[len(pairing_result)] = {}
                     # 生成配网结果文件
                     with open(file_name, "a", encoding=encoding) as f:
                         f.write(f"第{count}次配网：{device1}-{device1_result}\t{second_try_result1}\t{device2}"
                                 f"-{device2_result}\t{second_try_result2}\t{device3}-"
                                 f"{device3_result}\t{second_try_result3}\t{device4}-{device4_result}\t{second_try_result4}\t耗时"
                                 f"：{total_time}s\n")
+                    # 生成另一个excel文件
+                    time_elapsed = np.array([total_time])
+
                     # 返回产品选择界面
                     driver.press_keycode(4)
                     driver.press_keycode(4)

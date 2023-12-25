@@ -1,5 +1,5 @@
 import os
-import pandas
+import pandas as pd
 import LoginPage
 from Init import get_driver
 from VersionSelection import VersionSelection
@@ -141,7 +141,7 @@ class bluetooth_pairing_test:
         if total_succecc_rate_no is not None:
             self.delete_line_by_number(file_name, total_succecc_rate_no)
         one_time_setup_successful = 0
-        circle_times = 165
+        circle_times = 58
         remaining_iterations = circle_times - count
         devices_num = 4
         encoding = 'utf-8'
@@ -224,15 +224,16 @@ class bluetooth_pairing_test:
                             except selenium.common.exceptions.TimeoutException:
                                 self.logger.error("未找到产品选择按钮")
                             break
-                        if user_input == "stop":
+                        elif user_input == "stop":
                             total_successful_rate = round((count - fail_count - one_time_setup_successful) / count * 100, 2)
-                            with open(file_name, "a", encoding=encoding) as f:
-                                f.write(f"总的成功率:{total_successful_rate}%\n")
-                            sys.exit(0)
+                            is_continue = False
+                            break
                         else:
                             print("输入错误，请重新输入")
                     if is_continue:
                         continue
+                    else:
+                        break
 
                 start_setup_button = WebDriverWait(driver, 10).until(
                     ec.visibility_of_element_located((By.ID, 'com.ost.pintura:id/btn_next'))
@@ -592,7 +593,7 @@ class bluetooth_pairing_test:
         # 统计总的成功率
         fail_count, count, total_succecc_rate_no = self.test_result_statistics(file_name)
         self.logger.info(f"count = {count}，remaining_iterations={remaining_iterations}, circle_times={circle_times}")
-        total_successful_rate = round((count - fail_count - (current_iteration-one_time_setup_successful)) / count * 100, 2)
+        total_successful_rate = round((count - fail_count - one_time_setup_successful) / count * 100, 2)
         self.logger.info(
             f"本次运行总计配网:{current_iteration}次，成功:{one_time_setup_successful}次，失败"
             f":{current_iteration-one_time_setup_successful}次")
