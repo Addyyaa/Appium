@@ -141,7 +141,7 @@ class bluetooth_pairing_test:
         if total_succecc_rate_no is not None:
             self.delete_line_by_number(file_name, total_succecc_rate_no)
         one_time_setup_successful = 0
-        circle_times = 73
+        circle_times = 200
         remaining_iterations = circle_times - count
         devices_num = 4
         encoding = 'utf-8'

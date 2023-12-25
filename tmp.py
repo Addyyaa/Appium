@@ -142,7 +142,7 @@ class bluetooth_pairing_test:
         if total_succecc_rate_no is not None:
             self.delete_line_by_number(file_name, total_succecc_rate_no)
         one_time_setup_successful = 0
-        circle_times = 2
+        circle_times = 1
         remaining_iterations = circle_times - count
         devices_num = 4
         encoding = 'utf-8'
@@ -571,7 +571,7 @@ class bluetooth_pairing_test:
                     device2_excel_result = self.device_results_report(device2_result, second_try_result2)
                     device3_excel_result = self.device_results_report(device3_result, second_try_result3)
                     device4_excel_result = self.device_results_report(device4_result, second_try_result4)
-                    pairing_result.iloc[len(pairing_result)] = [device1_excel_result, device2_excel_result,
+                    pairing_result.loc[len(pairing_result)] = [device1_excel_result, device2_excel_result,
                                                                 device3_excel_result, device4_excel_result, total_time]
                     # 生成配网结果文件
                     with open(file_name, "a", encoding=encoding) as f:
@@ -614,7 +614,11 @@ class bluetooth_pairing_test:
         with open(file_name, "a", encoding=encoding) as f:
             f.write(f"总的成功率:{total_successful_rate}%\n")
         # 生成配网结果excel
-        pairing_result.to_excel(file_name, sheet_name="配网结果.xlsx", index=True)
+        print(pairing_result)
+        pairing_result.index = range(1, len(pairing_result) + 1)
+        pairing_result.index.name = "序号"
+        pairing_result.style.set_properties(**{'text-align': 'center'})
+        pairing_result.to_excel("配网结果.xlsx", sheet_name="配网结果")
         if count != circle_times:
             self.logger.info(f"由于异常原因导致还差{circle_times - count}次配网，程序即将退出")
             sys.exit()
