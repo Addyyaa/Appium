@@ -136,13 +136,13 @@ class bluetooth_pairing_test:
 
         sleep(5)
 
-        file_name = "配网结果.txt"
+        file_name = "配网结果tmp.txt"
         fail_count, count,  total_succecc_rate_no= self.test_result_statistics(file_name=file_name)
         # 删除total_succecc_rate_no行，避免重行
         if total_succecc_rate_no is not None:
             self.delete_line_by_number(file_name, total_succecc_rate_no)
         one_time_setup_successful = 0
-        circle_times = 200
+        circle_times = 2
         remaining_iterations = circle_times - count
         devices_num = 4
         encoding = 'utf-8'
@@ -567,25 +567,12 @@ class bluetooth_pairing_test:
                                 self.logger.info("二次配网失败")
                                 second_try_result4 = "二次配网失败"
                     # 生成excel对象
-                    if device1_result == "配网成功":
-                        device1_excel_result = "√"
-                    elif device1_result == "连接失败":
-                        device1_excel_result = "×"
-                    if device2_result == "配网成功":
-                        device2_excel_result = "√"
-                    elif device2_result == "连接失败":
-                        device2_excel_result = "×"
-                    if device3_result == "配网成功":
-                        device3_excel_result = "√"
-                    elif device3_result == "连接失败":
-                        device3_excel_result = "×"
-                    if device4_result == "配网成功":
-                        device4_excel_result = "√"
-                    elif device4_result == "连接失败":
-                        device4_excel_result = "×"
-
-
-                    pairing_result.iloc[len(pairing_result)] = {}
+                    device1_excel_result = self.device_results_report(device1_result, second_try_result1)
+                    device2_excel_result = self.device_results_report(device2_result, second_try_result2)
+                    device3_excel_result = self.device_results_report(device3_result, second_try_result3)
+                    device4_excel_result = self.device_results_report(device4_result, second_try_result4)
+                    pairing_result.iloc[len(pairing_result)] = [device1_excel_result, device2_excel_result,
+                                                                device3_excel_result, device4_excel_result, total_time]
                     # 生成配网结果文件
                     with open(file_name, "a", encoding=encoding) as f:
                         f.write(f"第{count}次配网：{device1}-{device1_result}\t{second_try_result1}\t{device2}"
@@ -626,11 +613,24 @@ class bluetooth_pairing_test:
         fail_count, count, total_succecc_rate_no = self. test_result_statistics(file_name)
         with open(file_name, "a", encoding=encoding) as f:
             f.write(f"总的成功率:{total_successful_rate}%\n")
+        # 生成配网结果excel
+        pairing_result.to_excel(file_name, sheet_name="配网结果.xlsx", index=True)
         if count != circle_times:
             self.logger.info(f"由于异常原因导致还差{circle_times - count}次配网，程序即将退出")
             sys.exit()
         # 关闭会话防止手机端出错
         driver.quit()
+
+    def device_results_report(self, device_result, second_try_result):
+        if device_result == "配网成功":
+            device_excel_result = "\u2713"
+        elif device_result == "连接失败" and second_try_result == "二次配网成功":
+            device_excel_result = "\u2B55"
+        elif device_result == "连接失败" and second_try_result == "二次配网失败":
+            device_excel_result = "×"
+        else:
+            device_excel_result = ""
+        return device_excel_result
 
 
 te = bluetooth_pairing_test()

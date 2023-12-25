@@ -141,7 +141,7 @@ class bluetooth_pairing_test:
         if total_succecc_rate_no is not None:
             self.delete_line_by_number(file_name, total_succecc_rate_no)
         one_time_setup_successful = 0
-        circle_times = 58
+        circle_times = 73
         remaining_iterations = circle_times - count
         devices_num = 4
         encoding = 'utf-8'
@@ -593,7 +593,8 @@ class bluetooth_pairing_test:
         # 统计总的成功率
         fail_count, count, total_succecc_rate_no = self.test_result_statistics(file_name)
         self.logger.info(f"count = {count}，remaining_iterations={remaining_iterations}, circle_times={circle_times}")
-        total_successful_rate = round((count - fail_count - one_time_setup_successful) / count * 100, 2)
+        total_successful_rate = round((count - fail_count - current_iteration + one_time_setup_successful) / count *
+                                      100, 2)
         self.logger.info(
             f"本次运行总计配网:{current_iteration}次，成功:{one_time_setup_successful}次，失败"
             f":{current_iteration-one_time_setup_successful}次")
