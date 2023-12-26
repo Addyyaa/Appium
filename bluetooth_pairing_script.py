@@ -126,6 +126,13 @@ class bluetooth_pairing_test:
             return 0, 0, 0
 
     def set_adaptive_column_width(self, writer, data_frame, work_sheet_name="配网结果"):
+        """
+        :param writer:
+        :param data_frame:
+        :param work_sheet_name:
+        :return:
+        因为外部传入DataFrame参数，以及该方法需要在with内使用，而with内无法直接访问DataFrame，需要先将DataFrame通过to_excel传入writer
+        """
         # 计算表头的字符宽度
         column_widths = data_frame.columns.to_series().apply(lambda x: len(str(x).encode('utf-8'))).values
         # 计算索引列（序号列）的宽度

@@ -46,23 +46,20 @@ def excel_reader(file_path):
 
 def excel_remove_rows(file_path, condition):
     is_exist = os.path.exists(file_path)
-    print(is_exist)
-    df = pd.read_excel(file_path, index_col=0, engine="openpyxl")
-    df.index = df.index.astype(str)
-    mask = df.index.str.contains(condition)
-    df = df[~mask]
-    print(df)
     df2 = pd.DataFrame({'Pintura-blt-L000892' : ["x","x", "p"], 'Pintura-blt-Ltest20' : ["x","x", "p"],
                         'Pintura-blt-L000308' : ["x","x", "p"], 'Pintura-blt-L000329' : ["x","x", "p"],
                         '耗时（S）' : [10, 20, 30] })
-
-
+    if is_exist:
+        df = pd.read_excel(file_path, index_col=0, engine="openpyxl")
+        df.index = df.index.astype(str)
+        mask = df.index.str.contains(condition)
+        df = df[~mask]
+        print(df)
+        df = pd.concat([df, df2], ignore_index=True)
+        df.index = df.index + 1
+        with pd.ExcelWriter(file_path) as writer:
+            df.to_excel(writer, sheet_name="配网结果", index=True)
     print(df2)
-    df = pd.concat([df, df2], ignore_index=True)
-    df.index = df.index + 1
-    print(df)
-    with pd.ExcelWriter(file_path) as writer:
-        df.to_excel(writer, sheet_name="配网结果", index=True)
 
 def set_adaptive_column_width(writer, data_frame, work_sheet_name="配网结果"):
     # 计算表头的字符宽度
@@ -106,7 +103,7 @@ def set_font_color(writer, data_frame, column_names, sheet_name="sheet1", color=
                     cell.font = Font(color="00FF00")
                 elif cell.value == "\u2B55":
                     cell.font = Font(color="0000FF")
-                elif cell.value == "×":
+                elif cell.value == "x":
                     cell.font = Font(color="FF0000")
                 else:
                     cell.font = Font(color="000000")
@@ -116,6 +113,12 @@ def set_font_color(writer, data_frame, column_names, sheet_name="sheet1", color=
 
 
 # 调用函数时传递文件路径
-# excel_reader("配网结果.xlsx")
-# excel_remove_rows("配网结果.xlsx", "总计成功率")
+excel_reader("配网结果.xlsx")
+excel_remove_rows("配网结果.xlsx", "总计成功率")
+df = pd.read_excel("配网结果.xlsx", index_col=0)
+columns = ['Pintura-blt-L000892', 'Pintura-blt-Ltest20', 'Pintura-blt-L000308', 'Pintura-blt-L000329']
+with pd.ExcelWriter("配网结果.xlsx") as writer:
+    df.to_excel(writer, sheet_name="配网结果", index=True)
+    set_adaptive_column_width(writer, data_frame=df)
+    set_font_color(writer, data_frame=df, column_names=columns, sheet_name="配网结果", color="00FF00", colors_condition=True)
 
