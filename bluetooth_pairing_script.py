@@ -266,8 +266,12 @@ class bluetooth_pairing_test:
             device1_element, device2_element, device3_element, device4_element = False, False, False, False
             device1_result, device2_result, device3_result, device4_result = None, None, None, None
             column_names = [device1, device2, device3, device4, "耗时（S）"]
-            # 创建一个空字典，用于存储每个设备的配网结果
-            pairing_result_dict = {}
+            # 创建空列表用于存储每个设备的配网结果
+            pairing_result_list1 = []
+            pairing_result_list2 = []
+            pairing_result_list3 = []
+            pairing_result_list4 = []
+            totaal_time_list = []
             for i in range(remaining_iterations):
                 current_iteration += 1
                 devices_successful = 0
@@ -682,22 +686,17 @@ class bluetooth_pairing_test:
                                 f"-{device2_result}\t{second_try_result2}\t{device3}-"
                                 f"{device3_result}\t{second_try_result3}\t{device4}-{device4_result}\t{second_try_result4}\t耗时"
                                 f"：{total_time}s\n")
-                    # 生成dataframe对象
-                    # TODO
+                    # 将结果转换为对应的符号
                     devce1_excel_result = self.device_results_report(device1_result, second_try_result1)
                     devce2_excel_result = self.device_results_report(device2_result, second_try_result2)
                     devce3_excel_result = self.device_results_report(device3_result, second_try_result3)
                     devce4_excel_result = self.device_results_report(device4_result, second_try_result4)
-                    # 将结果放入字典
-                    pairing_result_dict.update(
-                        {
-                            device1: [devce1_excel_result],
-                            device2: [devce2_excel_result],
-                            device3: [devce3_excel_result],
-                            device4: [devce4_excel_result],
-                            "耗时（S）": [total_time]
-                        }
-                    )
+                    # 将结果放入列表
+                    pairing_result_list1.append(devce1_excel_result)
+                    pairing_result_list2.append(devce2_excel_result)
+                    pairing_result_list3.append(devce3_excel_result)
+                    pairing_result_list4.append(devce4_excel_result)
+                    totaal_time_list.append(total_time)
                     # 返回产品选择界面
                     driver.press_keycode(4)
                     driver.press_keycode(4)
@@ -731,6 +730,14 @@ class bluetooth_pairing_test:
 
         with open(file_name, "a", encoding=encoding) as f:
             f.write(f"总的成功率:{total_successful_rate}%\n")
+        # 将列表赋值给字典
+        pairing_result_dict = {
+            device1: pairing_result_list1,
+            device2: pairing_result_list2,
+            device3: pairing_result_list3,
+            device4: pairing_result_list4,
+            "耗时": totaal_time_list
+        }
         # 生成配网结果excel
         print(pairing_result_dict)
         pairing_result = pd.DataFrame(pairing_result_dict, columns=column_names)
