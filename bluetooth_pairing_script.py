@@ -13,6 +13,10 @@ import selenium.common.exceptions
 from time import sleep
 import time
 import sys
+import numpy as np
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import Alignment
+from openpyxl.styles import Font
 
 
 class bluetooth_pairing_test:
@@ -73,7 +77,6 @@ class bluetooth_pairing_test:
         except Exception as e:
             print(f"发生错误：{e}")
 
-
         # 打印统计结果
         print(f"连接失败的次数：{fail_count}")
         print(f"最后一次配网次数：{last_attempt}")
@@ -95,6 +98,106 @@ class bluetooth_pairing_test:
             print(f"找不到文件：{file_path}")
         except Exception as e:
             print(f"发生错误：{e}")
+
+    def excel_reader(self, file_path):
+        try:
+            df = pd.read_excel(file_path, index_col=0, engine="openpyxl")
+            paired_times = 0
+            paired_fail = 0
+            twice_paired_fail = 0
+            # 获取序列号最后一个数字的值
+            for i in df.index[::-1]:
+                is_number = isinstance(i, (int, float))
+                if is_number:
+                    paired_times = i
+                    self.logger.info(f"最后一次配网次数：{i}")
+                    break
+            # 遍历所有行，统计一次配网失败以及二次配网结果,注意经过excel文件后x变成变得字符×
+            for row in df.itertuples():
+                if '\u2B55' in row or 'x' in row:
+                    paired_fail += 1
+                if 'x' in row:
+                    twice_paired_fail += 1
+            self.logger.info(
+                f"paired_times: {paired_times}, paired_fail: {paired_fail}, twice_paired_fail: {twice_paired_fail}")
+            return paired_times, paired_fail, twice_paired_fail
+        except FileNotFoundError:
+            print(f"找不到文件：{file_path}, 请确认是否第一次运行脚本")
+            return 0, 0, 0
+
+    def set_adaptive_column_width(self, writer, data_frame, work_sheet_name="配网结果"):
+        # 计算表头的字符宽度
+        column_widths = data_frame.columns.to_series().apply(lambda x: len(str(x).encode('utf-8'))).values
+        # 计算索引列（序号列）的宽度
+        index_width = len(str(data_frame.index.name).encode('utf-8'))
+        # 计算每列的最大字符宽度
+        max_widths = data_frame.astype(str).map(lambda x: len(x.encode('utf-8'))).max().values
+        # 计算整体最大宽度
+        widths = np.concatenate(([index_width], column_widths, max_widths))
+        # 设置每列的宽度
+        worksheet = writer.sheets[work_sheet_name]
+        for i, width in enumerate(widths):
+            col_letter = get_column_letter(i + 1)
+            worksheet.column_dimensions[col_letter].width = width + 2
+            # 设置列名（表头）水平和垂直居中
+            cell = worksheet[f"{col_letter}1"]
+            cell.alignment = Alignment(horizontal='center', vertical='center')
+            # 设置列值（数据）水平和垂直居中
+            for row_num in range(2, len(data_frame) + 2):
+                cell = worksheet[f"{col_letter}{row_num}"]
+                cell.alignment = Alignment(horizontal='center', vertical='center')
+
+    def set_font_color(self, writer, data_frame, column_names, sheet_name="sheet1", color="FFFFFF",
+                       colors_condition=False):
+        # 设置字体颜色
+        font_color = color
+        # 获取工作表对象
+        worksheet = writer.sheets[sheet_name]
+        # 遍历每一列
+        for col_to_color in column_names:
+            # 获取列的字母表示
+            col_letters = get_column_letter(data_frame.columns.get_loc(col_to_color) + 2)
+            # 获取列的所有单元格
+            column_cells = worksheet[col_letters]
+            # 设置字体颜色
+            for cell in column_cells:
+                if colors_condition and cell.row > 1:
+                    # 获取cell的值
+                    if cell.value == "\u2713":
+                        cell.font = Font(color="00FF00")
+                    elif cell.value == "\u2B55":
+                        cell.font = Font(color="0000FF")
+                    elif cell.value == "×":
+                        cell.font = Font(color="FF0000")
+                    else:
+                        cell.font = Font(color="000000")
+                else:
+                    if cell.row > 1:  # 排除列名
+                        cell.font = Font(color=font_color)
+
+    def device_results_report(self, device_result, second_try_result):
+        if device_result == "配网成功":
+            device_excel_result = "\u2713"
+        elif device_result == "连接失败" and second_try_result == "二次配网成功":
+            device_excel_result = "\u2B55"
+        elif device_result == "连接失败" and second_try_result == "二次配网失败":
+            device_excel_result = "×"
+        else:
+            device_excel_result = ""
+        return device_excel_result
+
+    def excel_remove_rows(self, file_path, condition):
+        try:
+            df = pd.read_excel(file_path, index_col=0, engine="openpyxl")
+            df = df.index.astype(str)
+            mask = df.index.str.contains(condition)
+            df = df[~mask]
+            print(df)
+            self.logger.info(f"dataframe：{df}")
+            with pd.ExcelWriter(file_path) as writer:
+                df.to_excel(writer)
+        except FileNotFoundError:
+            self.logger.info(f"找不到文件：{file_path}, 请确认是否第一次运行脚本")
 
     def enter_bluetooth_setup_interface(self, driver):
         try:
@@ -132,16 +235,21 @@ class bluetooth_pairing_test:
         driver = self.driver
         wait = WebDriverWait(driver, 5)
         self.enter_bluetooth_setup_interface(driver)
-
         sleep(5)
-
         file_name = "配网结果.txt"
-        fail_count, count,  total_succecc_rate_no= self.test_result_statistics(file_name=file_name)
+        # 读取配网结果txt文件，获取已配网的次数
+        fail_count, count, total_succecc_rate_no = self.test_result_statistics(file_name=file_name)
         # 删除total_succecc_rate_no行，避免重行
         if total_succecc_rate_no is not None:
             self.delete_line_by_number(file_name, total_succecc_rate_no)
+        excel_file_name = '配网结果.xlsx'
+        #读取配网结果xlsx文件，获取已配网的次数
+        # count_excel, fail_count_excel, twice_paired_fail_excel = self.excel_reader(excel_file_name)
+        if os.path.exists(excel_file_name):
+            # 移除总成功率
+            self.excel_remove_rows(excel_file_name, "总的成功率")
         one_time_setup_successful = 0
-        circle_times = 200
+        circle_times = 2
         remaining_iterations = circle_times - count
         devices_num = 4
         encoding = 'utf-8'
@@ -149,17 +257,20 @@ class bluetooth_pairing_test:
         current_iteration = 0
         # 循环配网，直到 circle_times 次
         if remaining_iterations > 0:
+            device1 = "Pintura-blt-L000892"
+            device2 = "Pintura-blt-Ltest20"
+            device3 = "Pintura-blt-L000308"
+            device4 = "Pintura-blt-L000329"
+            wifi_name = "zhancheng"
+            wifi_passwd = "nanjingzhancheng"
+            device1_element, device2_element, device3_element, device4_element = False, False, False, False
+            device1_result, device2_result, device3_result, device4_result = None, None, None, None
+            column_names = [device1, device2, device3, device4, "耗时（S）"]
+            # 创建一个空字典，用于存储每个设备的配网结果
+            pairing_result_dict = {}
             for i in range(remaining_iterations):
                 current_iteration += 1
                 devices_successful = 0
-                device1 = "Pintura-blt-L000892"
-                device2 = "Pintura-blt-Ltest20"
-                device3 = "Pintura-blt-L000308"
-                device4 = "Pintura-blt-L000329"
-                wifi_name = "zhancheng"
-                wifi_passwd = "nanjingzhancheng"
-                device1_element, device2_element, device3_element, device4_element = False, False, False, False
-                device1_result, device2_result, device3_result, device4_result = None, None, None, None
                 try:
                     device1_element = WebDriverWait(driver, 10).until(
                         ec.visibility_of_element_located((By.XPATH, f'//android.widget.TextView['
@@ -225,7 +336,8 @@ class bluetooth_pairing_test:
                                 self.logger.error("未找到产品选择按钮")
                             break
                         elif user_input == "stop":
-                            total_successful_rate = round((count - fail_count - one_time_setup_successful) / count * 100, 2)
+                            total_successful_rate = round(
+                                (count - fail_count - one_time_setup_successful) / count * 100, 2)
                             is_continue = False
                             break
                         else:
@@ -344,7 +456,7 @@ class bluetooth_pairing_test:
                 # 统计配网成功数量以及四台设备配网所需完成实际时间
                 if device1_complete and device2_complete and device3_complete and device4_complete:
                     end_time = time.time()
-                    self.logger.info(f"第{count+1}次配网已完成")
+                    self.logger.info(f"第{count + 1}次配网已完成")
                     # 总用时
                     total_time = round(end_time - start_time, 2)
                     self.logger.info(f"总用时：{total_time}s")
@@ -570,6 +682,22 @@ class bluetooth_pairing_test:
                                 f"-{device2_result}\t{second_try_result2}\t{device3}-"
                                 f"{device3_result}\t{second_try_result3}\t{device4}-{device4_result}\t{second_try_result4}\t耗时"
                                 f"：{total_time}s\n")
+                    # 生成dataframe对象
+                    # TODO
+                    devce1_excel_result = self.device_results_report(device1_result, second_try_result1)
+                    devce2_excel_result = self.device_results_report(device2_result, second_try_result2)
+                    devce3_excel_result = self.device_results_report(device3_result, second_try_result3)
+                    devce4_excel_result = self.device_results_report(device4_result, second_try_result4)
+                    # 将结果放入字典
+                    pairing_result_dict.update(
+                        {
+                            device1: [devce1_excel_result],
+                            device2: [devce2_excel_result],
+                            device3: [devce3_excel_result],
+                            device4: [devce4_excel_result],
+                            "耗时（S）": [total_time]
+                        }
+                    )
                     # 返回产品选择界面
                     driver.press_keycode(4)
                     driver.press_keycode(4)
@@ -597,12 +725,34 @@ class bluetooth_pairing_test:
                                       100, 2)
         self.logger.info(
             f"本次运行总计配网:{current_iteration}次，成功:{one_time_setup_successful}次，失败"
-            f":{current_iteration-one_time_setup_successful}次")
+            f":{current_iteration - one_time_setup_successful}次")
         self.logger.info(f"总的成功率:{total_successful_rate}%")
         # 生成配网结果文件
 
         with open(file_name, "a", encoding=encoding) as f:
             f.write(f"总的成功率:{total_successful_rate}%\n")
+        # 生成配网结果excel
+        print(pairing_result_dict)
+        pairing_result = pd.DataFrame(pairing_result_dict, columns=column_names)
+        pairing_result.index = pairing_result.index + 1
+        pairing_result.index.name = "序号"
+        print(pairing_result)
+        # 先读取已有的内容
+        if os.path.exists(excel_file_name):
+            self.logger.info("检测到文件存在")
+            df = pd.read_excel(excel_file_name, index_col=0)
+            # 拼接已有的内容到excel
+            print(pairing_result)
+            # 拼接
+            pairing_result = pd.concat([df, pairing_result], ignore_index=True)
+            pairing_result.index = pairing_result.index + 1
+            print(f"拼接后的pairing_result：{pairing_result}")
+        with pd.ExcelWriter(excel_file_name) as writer:
+            pairing_result.to_excel(writer, sheet_name="配网结果", index=True)
+            self.set_adaptive_column_width(writer, pairing_result, "配网结果")
+            color_column_names = [device1, device2, device3, device4]
+            self.set_font_color(writer, pairing_result, color_column_names, "配网结果", color="FFFFFF",
+                                colors_condition=True)
         if count != circle_times:
             self.logger.info(f"由于异常原因导致还差{circle_times - count}次配网，程序即将退出")
             sys.exit()

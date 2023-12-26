@@ -194,7 +194,7 @@ class bluetooth_pairing_test:
         if total_succecc_rate_no is not None:
             self.delete_line_by_number(file_name, total_succecc_rate_no)
         one_time_setup_successful = 0
-        circle_times = 1
+        circle_times = 4
         remaining_iterations = circle_times - count
         devices_num = 4
         encoding = 'utf-8'
@@ -670,10 +670,10 @@ class bluetooth_pairing_test:
         print(pairing_result)
         pairing_result.index = range(1, len(pairing_result) + 1)
         pairing_result.index.name = "序号"
-        # TODO 调用列宽自适应函数
+        # ·TODO 调用列宽自适应函数
         with pd.ExcelWriter(excel_file_name) as writer:
             pairing_result.to_excel(writer, sheet_name="配网结果", index=True)
-            self.set_adaptive_column_width(writer, pairing_result, excel_file_name)
+            self.set_adaptive_column_width(writer, pairing_result, "配网结果")
             color_column_names = [device1, device2, device3, device4]
             self.set_font_color(writer, pairing_result, color_column_names, "配网结果", color="FFFFFF", colors_condition=True)
         if count != circle_times:
