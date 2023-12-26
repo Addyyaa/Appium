@@ -762,6 +762,15 @@ class bluetooth_pairing_test:
             pairing_result = pd.concat([df, pairing_result], ignore_index=True)
             pairing_result.index = pairing_result.index + 1
             print(f"拼接后的pairing_result：{pairing_result}")
+        # 添加总计成功率
+        new_index = f"总的成功率：{total_succecc_rate_no}%"
+        pairing_result.loc[new_index] = {
+            "Pintura-blt-L000892": "",
+            "Pintura-blt-Ltest20": "",
+            "Pintura-blt-L000308": "",
+            "Pintura-blt-L000329": "",
+            "耗时（S）": ""
+        }
         with pd.ExcelWriter(excel_file_name) as writer:
             pairing_result.to_excel(writer, sheet_name="配网结果", index=True)
             self.set_adaptive_column_width(writer, pairing_result, "配网结果")
