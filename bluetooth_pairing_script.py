@@ -785,7 +785,7 @@ class bluetooth_pairing_test:
             self.set_adaptive_column_width(writer, pairing_result, "配网结果")
             # 将总的成功率居左
             worksheet = writer.sheets["配网结果"]
-            cell = worksheet[f"A{pairing_result.index.get_loc('总计成功率：') + 2}"]  # 这里的+2是因为python从0开始以及列名一行
+            cell = worksheet[f"A{pairing_result.index.get_loc(new_index) + 2}"]  # 这里的+2是因为python从0开始以及列名一行
             cell.alignment = Alignment(horizontal='left', vertical='center')
             cell.font = Font(bold=True, color="FF0000")
             color_column_names = [device1, device2, device3, device4]

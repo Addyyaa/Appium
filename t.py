@@ -42,13 +42,14 @@ def excel_reader(file_path):
         return paired_times, paired_fail, twice_paired_fail
     except FileNotFoundError:
         print(f"找不到文件：{file_path}, 请确认是否第一次运行脚本")
-        return 0
+        return 0, 0, 0
 
 def excel_remove_rows(file_path, condition):
     is_exist = os.path.exists(file_path)
     df2 = pd.DataFrame({'Pintura-blt-L000892' : ["x","x", "\u2B55"], 'Pintura-blt-Ltest20' : ["x","x", "\u2B55"],
                         'Pintura-blt-L000308' : ["x","x", "\u2B55"], 'Pintura-blt-L000329' : ["x","x", "\u2B55"],
                         '耗时（S）' : [10, 20, 30] })
+    new_index = ""
     if is_exist:
         df = pd.read_excel(file_path, index_col=0, engine="openpyxl")
         df.index = df.index.astype(str)
@@ -56,7 +57,8 @@ def excel_remove_rows(file_path, condition):
         df = df[~mask]
         print(df)
         df = pd.concat([df, df2], ignore_index=True)
-        new_index = "总计成功率："
+        paired_times, paired_fail, twice_paired_fail = excel_reader(file_path)
+        new_index = f"总计成功率：{(paired_times-paired_fail)/paired_times*100:.2f}%\t二次配网失败次数为：{twice_paired_fail}"
         df.index = df.index + 1
         df.loc[new_index] = {
             "Pintura-blt-L000892": "",
@@ -69,6 +71,7 @@ def excel_remove_rows(file_path, condition):
         with pd.ExcelWriter(file_path) as writer:
             df.to_excel(writer, sheet_name="配网结果", index=True)
     print(df2)
+    return new_index
 
 def set_adaptive_column_width(writer, data_frame, work_sheet_name="配网结果"):
     # 计算表头的字符宽度
@@ -127,8 +130,8 @@ def set_font_color(writer, data_frame, column_names, sheet_name="sheet1", color=
 
 
 # 调用函数时传递文件路径
-excel_reader("配网结果.xlsx")
-excel_remove_rows("配网结果.xlsx", "总计成功率")
+new_index = excel_remove_rows("配网结果.xlsx", "总计成功率")
+print(new_index)
 df = pd.read_excel("配网结果.xlsx", index_col=0)
 df.index.name = "序号"
 columns = ['Pintura-blt-L000892', 'Pintura-blt-Ltest20', 'Pintura-blt-L000308', 'Pintura-blt-L000329']
@@ -136,8 +139,8 @@ with pd.ExcelWriter("配网结果.xlsx") as writer:
     df.to_excel(writer, sheet_name="配网结果", index=True)
     set_adaptive_column_width(writer, data_frame=df)
     worksheet = writer.sheets["配网结果"]
-    cell = worksheet[f"A{df.index.get_loc('总计成功率：')+2 }"]  # 这里的+2是因为python从0开始以及列名一行
-    print(df.index.get_loc('总计成功率：'))
+    print(df.index.get_loc(new_index))
+    cell = worksheet[f"A{df.index.get_loc(new_index)+2 }"]  # 这里的+2是因为python从0开始以及列名一行
     cell.alignment = Alignment(horizontal='left', vertical='center')
     cell.font = Font(bold=True,color="FF0000")
     set_font_color(writer, data_frame=df, column_names=columns, sheet_name="配网结果", color="00FF00", colors_condition=True)
