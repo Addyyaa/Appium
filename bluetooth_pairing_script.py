@@ -140,12 +140,12 @@ class bluetooth_pairing_test:
         # 计算每列的最大字符宽度
         max_widths = data_frame.astype(str).map(lambda x: len(x.encode('utf-8'))).max().values
         # 计算整体最大宽度
-        widths = np.concatenate(([index_width], column_widths, max_widths))
+        widths = np.concatenate(([index_width], column_widths+4, max_widths+4))
         # 设置每列的宽度
         worksheet = writer.sheets[work_sheet_name]
         for i, width in enumerate(widths):
             col_letter = get_column_letter(i + 1)
-            worksheet.column_dimensions[col_letter].width = width + 4
+            worksheet.column_dimensions[col_letter].width = width
             # 设置列名（表头）水平和垂直居中
             cell = worksheet[f"{col_letter}1"]
             cell.alignment = Alignment(horizontal='center', vertical='center')

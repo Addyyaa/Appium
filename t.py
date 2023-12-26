@@ -64,17 +64,21 @@ def excel_remove_rows(file_path, condition):
 def set_adaptive_column_width(writer, data_frame, work_sheet_name="配网结果"):
     # 计算表头的字符宽度
     column_widths = data_frame.columns.to_series().apply(lambda x: len(str(x).encode('utf-8'))).values
+    print(f"column_widths: {column_widths}")
     # 计算索引列（序号列）的宽度
     index_width = len(str(data_frame.index.name).encode('utf-8'))
+    print(f"index_width: {index_width}")
     # 计算每列的最大字符宽度
     max_widths = data_frame.astype(str).map(lambda x: len(x.encode('utf-8'))).max().values
+    print(f"max_widths: {max_widths}")
     # 计算整体最大宽度
-    widths = np.concatenate(([index_width], column_widths, max_widths))
+    widths = np.concatenate(([index_width], column_widths + 4, max_widths + 4))
+    print(f"widths: {widths}")
     # 设置每列的宽度
-    worksheet = writer.sheets[work_sheet_name]
+    worksheet = writer.sheets[work_sheet_name]  # 获取工作表对象
     for i, width in enumerate(widths):
-        col_letter = get_column_letter(i + 1)
-        worksheet.column_dimensions[col_letter].width = width + 4
+        col_letter = get_column_letter(i + 1)  # 获取列的字母表示
+        worksheet.column_dimensions[col_letter].width = width
         # 设置列名（表头）水平和垂直居中
         cell = worksheet[f"{col_letter}1"]
         cell.alignment = Alignment(horizontal='center', vertical='center')
