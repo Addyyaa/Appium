@@ -145,7 +145,7 @@ class bluetooth_pairing_test:
         worksheet = writer.sheets[work_sheet_name]
         for i, width in enumerate(widths):
             col_letter = get_column_letter(i + 1)
-            worksheet.column_dimensions[col_letter].width = width + 2
+            worksheet.column_dimensions[col_letter].width = width + 4
             # 设置列名（表头）水平和垂直居中
             cell = worksheet[f"{col_letter}1"]
             cell.alignment = Alignment(horizontal='center', vertical='center')

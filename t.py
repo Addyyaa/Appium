@@ -46,8 +46,8 @@ def excel_reader(file_path):
 
 def excel_remove_rows(file_path, condition):
     is_exist = os.path.exists(file_path)
-    df2 = pd.DataFrame({'Pintura-blt-L000892' : ["x","x", "p"], 'Pintura-blt-Ltest20' : ["x","x", "p"],
-                        'Pintura-blt-L000308' : ["x","x", "p"], 'Pintura-blt-L000329' : ["x","x", "p"],
+    df2 = pd.DataFrame({'Pintura-blt-L000892' : ["x","x", "\u2B55"], 'Pintura-blt-Ltest20' : ["x","x", "\u2B55"],
+                        'Pintura-blt-L000308' : ["x","x", "\u2B55"], 'Pintura-blt-L000329' : ["x","x", "\u2B55"],
                         '耗时（S）' : [10, 20, 30] })
     if is_exist:
         df = pd.read_excel(file_path, index_col=0, engine="openpyxl")
@@ -74,7 +74,7 @@ def set_adaptive_column_width(writer, data_frame, work_sheet_name="配网结果"
     worksheet = writer.sheets[work_sheet_name]
     for i, width in enumerate(widths):
         col_letter = get_column_letter(i + 1)
-        worksheet.column_dimensions[col_letter].width = width + 2
+        worksheet.column_dimensions[col_letter].width = width + 4
         # 设置列名（表头）水平和垂直居中
         cell = worksheet[f"{col_letter}1"]
         cell.alignment = Alignment(horizontal='center', vertical='center')
