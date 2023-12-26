@@ -245,17 +245,18 @@ class bluetooth_pairing_test:
         self.enter_bluetooth_setup_interface(driver)
         sleep(5)
         file_name = "配网结果.txt"
+        twice_paired_fail_excel = 0
         # 读取配网结果txt文件，获取已配网的次数
         fail_count, count, total_succecc_rate_no = self.test_result_statistics(file_name=file_name)
         # 删除total_succecc_rate_no行，避免重行
         if total_succecc_rate_no is not None:
             self.delete_line_by_number(file_name, total_succecc_rate_no)
         excel_file_name = '配网结果.xlsx'
-        #读取配网结果xlsx文件，获取已配网的次数
-        # count_excel, fail_count_excel, twice_paired_fail_excel = self.excel_reader(excel_file_name)
         if os.path.exists(excel_file_name):
             # 移除总成功率
             self.excel_remove_rows(excel_file_name, "总的成功率")
+            # 读取配网结果xlsx文件，获取已配网的次数
+            count_excel, fail_count_excel, twice_paired_fail_excel = self.excel_reader(excel_file_name)
         one_time_setup_successful = 0
         circle_times = 2
         remaining_iterations = circle_times - count
@@ -263,6 +264,7 @@ class bluetooth_pairing_test:
         encoding = 'utf-8'
         file_name = file_name
         current_iteration = 0
+        current_twice_pairing_fail = 0
         # 循环配网，直到 circle_times 次
         if remaining_iterations > 0:
             device1 = "Pintura-blt-L000892"
@@ -688,6 +690,12 @@ class bluetooth_pairing_test:
                             else:
                                 self.logger.info("二次配网失败")
                                 second_try_result4 = "二次配网失败"
+
+                    # 统计本轮二次配网失败的次数
+                    second_try_results = [second_try_result1, second_try_result2, second_try_result3, second_try_result4]
+                    if "二次配网失败" in second_try_results:
+                        current_twice_pairing_fail += 1
+
                     # 生成配网结果文件
                     with open(file_name, "a", encoding=encoding) as f:
                         f.write(f"第{count}次配网：{device1}-{device1_result}\t{second_try_result1}\t{device2}"
@@ -763,7 +771,8 @@ class bluetooth_pairing_test:
             pairing_result.index = pairing_result.index + 1
             print(f"拼接后的pairing_result：{pairing_result}")
         # 添加总计成功率
-        new_index = f"总的成功率：{total_succecc_rate_no}%"
+        total_twice_pairing_fail = current_twice_pairing_fail + twice_paired_fail_excel
+        new_index = f"总的成功率：{total_succecc_rate_no}%\t二次配网失败次数：{total_twice_pairing_fail}"
         pairing_result.loc[new_index] = {
             "Pintura-blt-L000892": "",
             "Pintura-blt-Ltest20": "",
