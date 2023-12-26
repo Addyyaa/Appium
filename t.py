@@ -72,13 +72,14 @@ def set_adaptive_column_width(writer, data_frame, work_sheet_name="配网结果"
     max_widths = data_frame.astype(str).map(lambda x: len(x.encode('utf-8'))).max().values
     print(f"max_widths: {max_widths}")
     # 计算整体最大宽度
-    widths = np.concatenate(([index_width], column_widths + 4, max_widths + 4))
+    widths = [max(x, y) for x, y in zip(column_widths, max_widths)]
+    widths.insert(0, index_width)
     print(f"widths: {widths}")
     # 设置每列的宽度
     worksheet = writer.sheets[work_sheet_name]  # 获取工作表对象
     for i, width in enumerate(widths):
         col_letter = get_column_letter(i + 1)  # 获取列的字母表示
-        worksheet.column_dimensions[col_letter].width = width
+        worksheet.column_dimensions[col_letter].width = width + 4
         # 设置列名（表头）水平和垂直居中
         cell = worksheet[f"{col_letter}1"]
         cell.alignment = Alignment(horizontal='center', vertical='center')
@@ -120,6 +121,7 @@ def set_font_color(writer, data_frame, column_names, sheet_name="sheet1", color=
 excel_reader("配网结果.xlsx")
 excel_remove_rows("配网结果.xlsx", "总计成功率")
 df = pd.read_excel("配网结果.xlsx", index_col=0)
+df.index.name = "序号"
 columns = ['Pintura-blt-L000892', 'Pintura-blt-Ltest20', 'Pintura-blt-L000308', 'Pintura-blt-L000329']
 with pd.ExcelWriter("配网结果.xlsx") as writer:
     df.to_excel(writer, sheet_name="配网结果", index=True)

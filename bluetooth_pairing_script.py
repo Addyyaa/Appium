@@ -134,17 +134,18 @@ class bluetooth_pairing_test:
         因为外部传入DataFrame参数，以及该方法需要在with内使用，而with内无法直接访问DataFrame，需要先将DataFrame通过to_excel传入writer
         """
         # 计算表头的字符宽度
-        column_widths = data_frame.columns.to_series().apply(lambda x: len(str(x).encode('utf-8'))).values
+        column_widths = data_frame.columns.to_series().apply(lambda x: len(str(x).encode('utf-8'))).values  # 遍历列名的宽度
         # 计算索引列（序号列）的宽度
         index_width = len(str(data_frame.index.name).encode('utf-8'))
         # 计算每列的最大字符宽度
-        max_widths = data_frame.astype(str).map(lambda x: len(x.encode('utf-8'))).max().values
+        max_widths = data_frame.astype(str).map(lambda x: len(x.encode('utf-8'))).max().values  # map会遍历data_frame所有元素，而astype会以列的方式将data_frame转换为Series
         # 计算整体最大宽度
-        widths = np.concatenate(([index_width], column_widths+4, max_widths+4))
+        widths = [max(x, y) for x, y in zip(column_widths+2, max_widths+2)]
+        widths.insert(0, index_width)
         # 设置每列的宽度
-        worksheet = writer.sheets[work_sheet_name]
+        worksheet = writer.sheets[work_sheet_name]  # 获取工作表对象
         for i, width in enumerate(widths):
-            col_letter = get_column_letter(i + 1)
+            col_letter = get_column_letter(i + 1)  # 获取列的字母表示
             worksheet.column_dimensions[col_letter].width = width
             # 设置列名（表头）水平和垂直居中
             cell = worksheet[f"{col_letter}1"]
