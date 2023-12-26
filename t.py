@@ -135,5 +135,10 @@ columns = ['Pintura-blt-L000892', 'Pintura-blt-Ltest20', 'Pintura-blt-L000308', 
 with pd.ExcelWriter("配网结果.xlsx") as writer:
     df.to_excel(writer, sheet_name="配网结果", index=True)
     set_adaptive_column_width(writer, data_frame=df)
+    worksheet = writer.sheets["配网结果"]
+    cell = worksheet[f"A{df.index.get_loc('总计成功率：')+2 }"]  # 这里的+2是因为python从0开始以及列名一行
+    print(df.index.get_loc('总计成功率：'))
+    cell.alignment = Alignment(horizontal='left', vertical='center')
+    cell.font = Font(bold=True,color="FF0000")
     set_font_color(writer, data_frame=df, column_names=columns, sheet_name="配网结果", color="00FF00", colors_condition=True)
 
