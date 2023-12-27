@@ -73,8 +73,10 @@ class bluetooth_pairing_test:
                         total_succecc_rate_no = line_number
         except FileNotFoundError:
             print(f"找不到文件：{file_name}")
+            self.logger.error(f"找不到文件：{file_name}")
         except Exception as e:
             print(f"发生错误：{e}")
+            self.logger.error(f"发生错误：{e}")
 
         # 打印统计结果
         print(f"连接失败的次数：{fail_count}")
@@ -122,6 +124,7 @@ class bluetooth_pairing_test:
             return paired_times, paired_fail, twice_paired_fail
         except FileNotFoundError:
             print(f"找不到文件：{file_path}, 请确认是否第一次运行脚本")
+            self.logger.error(f"找不到文件：{file_path}, 请确认是否第一次运行脚本")
             return 0, 0, 0
 
     def set_adaptive_column_width(self, writer, data_frame, work_sheet_name="配网结果"):
@@ -199,7 +202,6 @@ class bluetooth_pairing_test:
             df.index = df.index.astype(str)
             mask = df.index.str.contains(condition)
             df = df[~mask]
-            print(df)
             self.logger.info(f"dataframe：{df}")
             with pd.ExcelWriter(file_path) as writer:
                 df.to_excel(writer)
@@ -257,7 +259,7 @@ class bluetooth_pairing_test:
             # 读取配网结果xlsx文件，获取已配网的次数
             count_excel, fail_count_excel, twice_paired_fail_excel = self.excel_reader(excel_file_name)
         one_time_setup_successful = 0
-        circle_times = 2
+        circle_times = 200
         remaining_iterations = circle_times - count
         devices_num = 4
         encoding = 'utf-8'
@@ -349,8 +351,6 @@ class bluetooth_pairing_test:
                                 self.logger.error("未找到产品选择按钮")
                             break
                         elif user_input == "stop":
-                            total_successful_rate = round(
-                                (count - fail_count - one_time_setup_successful) / count * 100, 2)
                             is_continue = False
                             break
                         else:
@@ -469,10 +469,9 @@ class bluetooth_pairing_test:
                 # 统计配网成功数量以及四台设备配网所需完成实际时间
                 if device1_complete and device2_complete and device3_complete and device4_complete:
                     end_time = time.time()
-                    self.logger.info(f"第{count + 1}次配网已完成")
+                    self.logger.info(f"第{count + 1}次配网已完成，总用时：{total_time}s")
                     # 总用时
                     total_time = round(end_time - start_time, 2)
-                    print(f"总用时：{total_time}s")
                     self.logger.info(f"总用时：{total_time}s")
                     # 重新获取元素
                     device1_complete = WebDriverWait(driver, 10).until(
@@ -713,7 +712,6 @@ class bluetooth_pairing_test:
                     pairing_result_list3.append(devce3_excel_result)
                     pairing_result_list4.append(devce4_excel_result)
                     totaal_time_list.append(total_time)
-                    print(f"totaal_time_list = {totaal_time_list}")
                     # 返回产品选择界面
                     driver.press_keycode(4)
                     driver.press_keycode(4)
@@ -757,22 +755,17 @@ class bluetooth_pairing_test:
             "耗时（S）": totaal_time_list
         }
         # 生成配网结果excel
-        print(pairing_result_dict)
         pairing_result = pd.DataFrame(pairing_result_dict, columns=column_names)
         pairing_result.index = pairing_result.index + 1
         pairing_result.index.name = "序号"
-        print(pairing_result)
+        self.logger.info(pairing_result)
         # 先读取已有的内容
         if os.path.exists(excel_file_name):
             self.logger.info("检测到文件存在")
             df = pd.read_excel(excel_file_name, index_col=0)
             # 拼接已有的内容到excel
-            print(f"pairing_result：\n{pairing_result}")
-            print(f"新增df：\n{df}")
-            # 拼接
             pairing_result = pd.concat([df, pairing_result], ignore_index=True)
             pairing_result.index = pairing_result.index + 1
-            print(f"拼接后的pairing_result：{pairing_result}")
         # 添加总计成功率
         total_twice_pairing_fail = current_twice_pairing_fail + twice_paired_fail_excel
         new_index = f"总的成功率：{total_successful_rate}%\t二次配网失败次数：{total_twice_pairing_fail}"
