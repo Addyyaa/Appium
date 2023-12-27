@@ -188,7 +188,7 @@ class bluetooth_pairing_test:
         elif device_result == "连接失败" and second_try_result == "二次配网成功":
             device_excel_result = "\u2B55"
         elif device_result == "连接失败" and second_try_result == "二次配网失败":
-            device_excel_result = "×"
+            device_excel_result = "x"
         else:
             device_excel_result = ""
         return device_excel_result
@@ -472,6 +472,7 @@ class bluetooth_pairing_test:
                     self.logger.info(f"第{count + 1}次配网已完成")
                     # 总用时
                     total_time = round(end_time - start_time, 2)
+                    print(f"总用时：{total_time}s")
                     self.logger.info(f"总用时：{total_time}s")
                     # 重新获取元素
                     device1_complete = WebDriverWait(driver, 10).until(
@@ -712,6 +713,7 @@ class bluetooth_pairing_test:
                     pairing_result_list3.append(devce3_excel_result)
                     pairing_result_list4.append(devce4_excel_result)
                     totaal_time_list.append(total_time)
+                    print(f"totaal_time_list = {totaal_time_list}")
                     # 返回产品选择界面
                     driver.press_keycode(4)
                     driver.press_keycode(4)
@@ -735,7 +737,8 @@ class bluetooth_pairing_test:
         # 统计总的成功率
         fail_count, count, total_succecc_rate_no = self.test_result_statistics(file_name)
         self.logger.info(f"count = {count}，remaining_iterations={remaining_iterations}, circle_times={circle_times}")
-        total_successful_rate = round((count - fail_count - current_iteration + one_time_setup_successful) / count *
+        total_successful_rate = round((count+current_iteration-fail_count-(
+                current_iteration-one_time_setup_successful)) / (count+current_iteration) *
                                       100, 2)
         self.logger.info(
             f"本次运行总计配网:{current_iteration}次，成功:{one_time_setup_successful}次，失败"
@@ -751,7 +754,7 @@ class bluetooth_pairing_test:
             device2: pairing_result_list2,
             device3: pairing_result_list3,
             device4: pairing_result_list4,
-            "耗时": totaal_time_list
+            "耗时（S）": totaal_time_list
         }
         # 生成配网结果excel
         print(pairing_result_dict)
@@ -764,14 +767,15 @@ class bluetooth_pairing_test:
             self.logger.info("检测到文件存在")
             df = pd.read_excel(excel_file_name, index_col=0)
             # 拼接已有的内容到excel
-            print(pairing_result)
+            print(f"pairing_result：\n{pairing_result}")
+            print(f"新增df：\n{df}")
             # 拼接
             pairing_result = pd.concat([df, pairing_result], ignore_index=True)
             pairing_result.index = pairing_result.index + 1
             print(f"拼接后的pairing_result：{pairing_result}")
         # 添加总计成功率
         total_twice_pairing_fail = current_twice_pairing_fail + twice_paired_fail_excel
-        new_index = f"总的成功率：{total_succecc_rate_no}%\t二次配网失败次数：{total_twice_pairing_fail}"
+        new_index = f"总的成功率：{total_successful_rate}%\t二次配网失败次数：{total_twice_pairing_fail}"
         pairing_result.loc[new_index] = {
             "Pintura-blt-L000892": "",
             "Pintura-blt-Ltest20": "",
