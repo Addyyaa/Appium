@@ -736,7 +736,7 @@ class bluetooth_pairing_test:
         fail_count, count, total_succecc_rate_no = self.test_result_statistics(file_name)
         self.logger.info(f"count = {count}，remaining_iterations={remaining_iterations}, circle_times={circle_times}")
         if count > 0:
-            total_successful_rate = round((count-fail_count)/count, 2)
+            total_successful_rate = round((count-fail_count)/count*100, 2)
         else:
             total_successful_rate = 0
         self.logger.info(
