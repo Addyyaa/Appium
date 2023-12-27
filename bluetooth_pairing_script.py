@@ -13,7 +13,6 @@ import selenium.common.exceptions
 from time import sleep
 import time
 import sys
-import numpy as np
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Alignment
 from openpyxl.styles import Font
@@ -197,7 +196,7 @@ class bluetooth_pairing_test:
     def excel_remove_rows(self, file_path, condition):
         try:
             df = pd.read_excel(file_path, index_col=0, engine="openpyxl")
-            df = df.index.astype(str)
+            df.index = df.index.astype(str)
             mask = df.index.str.contains(condition)
             df = df[~mask]
             print(df)

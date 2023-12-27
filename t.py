@@ -1,19 +1,5 @@
 import os
 import pandas as pd
-import LoginPage
-from Init import get_driver
-from VersionSelection import VersionSelection
-from LoginPage import LoginPage
-import Config
-import logging
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as ec
-from selenium.webdriver.common.by import By
-import selenium.common.exceptions
-from time import sleep
-import time
-import sys
-import numpy as np
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Alignment
 from openpyxl.styles import Font
