@@ -469,10 +469,10 @@ class bluetooth_pairing_test:
                 # 统计配网成功数量以及四台设备配网所需完成实际时间
                 if device1_complete and device2_complete and device3_complete and device4_complete:
                     end_time = time.time()
-                    self.logger.info(f"第{count + 1}次配网已完成，总用时：{total_time}s")
+
                     # 总用时
                     total_time = round(end_time - start_time, 2)
-                    self.logger.info(f"总用时：{total_time}s")
+                    self.logger.info(f"第{count + 1}次配网已完成，总用时：{total_time}s")
                     # 重新获取元素
                     device1_complete = WebDriverWait(driver, 10).until(
                         ec.visibility_of_element_located((By.XPATH,
