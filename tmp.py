@@ -391,7 +391,8 @@ class bluetooth_pairing_test:
                 # 等待配网完成
                 if "等待配网成功":
                     for device in devices:
-
+                        element = f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and '
+                                           f'@text="{device["id"]}"]/following-sibling::*[1]'
 
 
 
