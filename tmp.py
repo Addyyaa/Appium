@@ -557,9 +557,25 @@ class bluetooth_pairing_test:
         # 添加总计成功率
         total_twice_pairing_fail = current_twice_pairing_fail + twice_paired_fail_excel
         new_index = f"总的成功率：{total_successful_rate}%\t二次配网失败次数：{total_twice_pairing_fail}"
-
-
-
+        pairing_result.loc[new_index] = None
+        with pd.ExcelWriter(excel_file_name) as writer:
+            pairing_result.to_excel(writer, sheet_name="配网结果", index=True)
+            self.set_adaptive_column_width(writer, pairing_result, "配网结果")
+            # 将总的成功率居左
+            worksheet = writer.sheets["配网结果"]
+            cell = worksheet[f"A{pairing_result.index.get_loc(new_index) + 2}"]  # 这里的+2是因为python从0开始以及列名一行
+            cell.alignment = Alignment(horizontal='left', vertical='center')
+            cell.font = Font(bold=True, color="FF0000")
+            color_column_names = []
+            for device in devices:
+                color_column_names.append(device['id'])
+            self.set_font_color(writer, pairing_result, color_column_names, "配网结果", color="FFFFFF",
+                                colors_condition=True)
+            if count != circle_times:
+                self.logger.info(f"由于异常原因导致还差{circle_times - count}次配网，程序即将退出")
+                sys.exit()
+            # 关闭会话防止手机端出错
+            driver.quit()
 
 
 te = bluetooth_pairing_test()
