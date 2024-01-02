@@ -259,7 +259,7 @@ class bluetooth_pairing_test:
             # 读取配网结果xlsx文件，获取已配网的次数
             count_excel, fail_count_excel, twice_paired_fail_excel = self.excel_reader(excel_file_name)
         one_time_setup_successful = 0
-        circle_times = 200
+        circle_times = 500
         remaining_iterations = circle_times - count
         devices_num = 4
         encoding = 'utf-8'
