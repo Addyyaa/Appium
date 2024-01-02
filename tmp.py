@@ -390,7 +390,8 @@ class bluetooth_pairing_test:
                                 self.logger.error("未找到连接按钮")
                 # 等待配网完成
                 if "等待配网成功":
-                    devices_complete =
+                    for device in devices:
+
 
 
 
