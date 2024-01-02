@@ -1,133 +1,19 @@
-import os
-import pandas as pd
-from openpyxl.utils import get_column_letter
-from openpyxl.styles import Alignment
-from openpyxl.styles import Font
+devices = [
+            {"id": "Pintura-blt-L000892", "element": '//android.widget.TextView['
+                                                     f'@resource-id="com.ost.pintura:id/tv_name" and '
+                                                     f'@text="Pintura-blt-L000892"]', "result": None, "second_try_result": None},
+            {"id": "Pintura-blt-Ltest20", "element": '//android.widget.TextView['
+                                                     f'@resource-id="com.ost.pintura:id/tv_name" and '
+                                                     f'@text="Pintura-blt-Ltest20"]', "result": None, "second_try_result": None},
+            {"id": "Pintura-blt-L000308", "element": '//android.widget.TextView['
+                                                     f'@resource-id="com.ost.pintura:id/tv_name" and '
+                                                     f'@text="Pintura-blt-L000308"]', "result": None, "second_try_result": None},
+            {"id": "Pintura-blt-L000329", "element": '//android.widget.TextView['
+                                                     f'@resource-id="com.ost.pintura:id/tv_name" and '
+                                                     f'@text="Pintura-blt-L000329"]', "result": None, "second_try_result": None},
+        ]
 
-
-def excel_reader(file_path):
-    try:
-        df = pd.read_excel(file_path, index_col=0)
-        paired_times = 0
-        paired_fail = 0
-        twice_paired_fail = 0
-        # 获取序列号最后一个数字的值
-        for i in df.index[::-1]:
-            is_number = isinstance(i, (int, float))
-            if is_number:
-                paired_times = i
-                print(f"最后一次配网次数：{i}")
-                break
-        # 遍历所有行，统计一次配网失败以及二次配网结果,注意经过excel文件后x变成变得字符×
-        for row in df.itertuples():
-            if '\u2B55' in row or 'x' in row:
-                paired_fail += 1
-            if 'x' in row:
-                twice_paired_fail += 1
-        print(f"paired_times: {paired_times}, paired_fail: {paired_fail}, twice_paired_fail: {twice_paired_fail}")
-        return paired_times, paired_fail, twice_paired_fail
-    except FileNotFoundError:
-        print(f"找不到文件：{file_path}, 请确认是否第一次运行脚本")
-        return 0, 0, 0
-
-def excel_remove_rows(file_path, condition):
-    is_exist = os.path.exists(file_path)
-    df2 = pd.DataFrame({'Pintura-blt-L000892' : ["x","x", "\u2B55"], 'Pintura-blt-Ltest20' : ["x","x", "\u2B55"],
-                        'Pintura-blt-L000308' : ["x","x", "\u2B55"], 'Pintura-blt-L000329' : ["x","x", "\u2B55"],
-                        '耗时（S）' : [10, 20, 30] })
-    new_index = ""
-    if is_exist:
-        df = pd.read_excel(file_path, index_col=0, engine="openpyxl")
-        df.index = df.index.astype(str)
-        mask = df.index.str.contains(condition)
-        df = df[~mask]
-        print(df)
-        df = pd.concat([df, df2], ignore_index=True)
-        paired_times, paired_fail, twice_paired_fail = excel_reader(file_path)
-        new_index = f"总计成功率：{(paired_times-paired_fail)/paired_times*100:.2f}%\t二次配网失败次数为：{twice_paired_fail}"
-        df.index = df.index + 1
-        df.loc[new_index] = {
-            "Pintura-blt-L000892": "",
-            "Pintura-blt-Ltest20": "",
-            "Pintura-blt-L000308": "",
-            "Pintura-blt-L000329": "",
-            "耗时（S）": ""
-        }
-
-        with pd.ExcelWriter(file_path) as writer:
-            df.to_excel(writer, sheet_name="配网结果", index=True)
-    print(df2)
-    return new_index
-
-def set_adaptive_column_width(writer, data_frame, work_sheet_name="配网结果"):
-    # 计算表头的字符宽度
-    column_widths = data_frame.columns.to_series().apply(lambda x: len(str(x).encode('utf-8'))).values
-    print(f"column_widths: {column_widths}")
-    # 计算索引列（序号列）的宽度
-    index_width = len(str(data_frame.index.name).encode('utf-8'))
-    print(f"index_width: {index_width}")
-    # 计算每列的最大字符宽度
-    max_widths = data_frame.astype(str).map(lambda x: len(x.encode('utf-8'))).max().values
-    print(f"max_widths: {max_widths}")
-    # 计算整体最大宽度
-    widths = [max(x, y) for x, y in zip(column_widths+4, max_widths+4)]
-    widths.insert(0, index_width)
-    print(f"widths: {widths}")
-    # 设置每列的宽度
-    worksheet = writer.sheets[work_sheet_name]  # 获取工作表对象
-    for i, width in enumerate(widths):
-        col_letter = get_column_letter(i + 1)  # 获取列的字母表示
-        worksheet.column_dimensions[col_letter].width = width
-        # 设置列名（表头）水平和垂直居中
-        cell = worksheet[f"{col_letter}1"]
-        cell.alignment = Alignment(horizontal='center', vertical='center')
-        # 设置列值（数据）水平和垂直居中
-        for row_num in range(2, len(data_frame) + 2):
-            cell = worksheet[f"{col_letter}{row_num}"]
-            cell.alignment = Alignment(horizontal='center', vertical='center')
-
-def set_font_color(writer, data_frame, column_names, sheet_name="sheet1", color="FFFFFF",
-                   colors_condition=False):
-    # 设置字体颜色
-    font_color = color
-    # 获取工作表对象
-    worksheet = writer.sheets[sheet_name]
-    # 遍历每一列
-    for col_to_color in column_names:
-        # 获取列的字母表示
-        col_letters = get_column_letter(data_frame.columns.get_loc(col_to_color) + 2)
-        # 获取列的所有单元格
-        column_cells = worksheet[col_letters]
-        # 设置字体颜色
-        for cell in column_cells:
-            if colors_condition and cell.row > 1:
-                # 获取cell的值
-                if cell.value == "\u2713":
-                    cell.font = Font(color="00FF00")
-                elif cell.value == "\u2B55":
-                    cell.font = Font(color="0000FF")
-                elif cell.value == "x":
-                    cell.font = Font(color="FF0000")
-                else:
-                    cell.font = Font(color="000000")
-            else:
-                if cell.row > 1:  # 排除列名
-                    cell.font = Font(color=font_color)
-
-
-# 调用函数时传递文件路径
-new_index = excel_remove_rows("配网结果.xlsx", "总计成功率")
-print(new_index)
-df = pd.read_excel("配网结果.xlsx", index_col=0)
-df.index.name = "序号"
-columns = ['Pintura-blt-L000892', 'Pintura-blt-Ltest20', 'Pintura-blt-L000308', 'Pintura-blt-L000329']
-with pd.ExcelWriter("配网结果.xlsx") as writer:
-    df.to_excel(writer, sheet_name="配网结果", index=True)
-    set_adaptive_column_width(writer, data_frame=df)
-    worksheet = writer.sheets["配网结果"]
-    print(df.index.get_loc(new_index))
-    cell = worksheet[f"A{df.index.get_loc(new_index)+2 }"]  # 这里的+2是因为python从0开始以及列名一行
-    cell.alignment = Alignment(horizontal='left', vertical='center')
-    cell.font = Font(bold=True,color="FF0000")
-    set_font_color(writer, data_frame=df, column_names=columns, sheet_name="配网结果", color="00FF00", colors_condition=True)
-
+for device in devices:
+    print(device["id"])
+    with open("临时文件.txt", "a", encoding="utf-8") as f:
+        f.write(f"配网：{device["id"]}-{device["result"]}\t{device["second_try_result"]}\t")
