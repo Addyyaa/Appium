@@ -261,29 +261,33 @@ class bluetooth_pairing_test:
             # 读取配网结果xlsx文件，获取已配网的次数
             count_excel, fail_count_excel, twice_paired_fail_excel = self.excel_reader(excel_file_name)
         one_time_setup_successful = 0
-        circle_times = 400
+        circle_times = 2
         remaining_iterations = circle_times - count
         devices_num = 4
         encoding = 'utf-8'
         file_name = file_name
         current_iteration = 0
         current_twice_pairing_fail = 0
-        wifi_name = "zhancheng"
-        wifi_passwd = "nanjingzhancheng"
+        wifi_name = "小王子"
+        wifi_passwd = "sf19960408"
         # 设备信息
         devices = [
-            {"id": "Pintura-blt-L000892", "element": '//android.widget.TextView['
+            # {"id": "Pintura-blt-L000892", "element": '//android.widget.TextView['
+            #                                          f'@resource-id="com.ost.pintura:id/tv_name" and '
+            #                                          f'@text="Pintura-blt-L000892"]', "result": None, "second_try_result": None, 'pairing_results_excel': []},
+            # {"id": "Pintura-blt-Ltest20", "element": '//android.widget.TextView['
+            #                                          f'@resource-id="com.ost.pintura:id/tv_name" and '
+            #                                          f'@text="Pintura-blt-Ltest20"]', "result": None, "second_try_result": None, 'pairing_results_excel': []},
+            # {"id": "Pintura-blt-L000308", "element": '//android.widget.TextView['
+            #                                          f'@resource-id="com.ost.pintura:id/tv_name" and '
+            #                                          f'@text="Pintura-blt-L000308"]', "result": None, "second_try_result": None, 'pairing_results_excel': []},
+            # {"id": "Pintura-blt-L000329", "element": '//android.widget.TextView['
+            #                                          f'@resource-id="com.ost.pintura:id/tv_name" and '
+            #                                          f'@text="Pintura-blt-L000329"]', "result": None, "second_try_result": None, 'pairing_results_excel': []},
+            {"id": "Pintura-blt-Ltet503", "element": '//android.widget.TextView['
                                                      f'@resource-id="com.ost.pintura:id/tv_name" and '
-                                                     f'@text="Pintura-blt-L000892"]', "result": None, "second_try_result": None, 'pairing_results_excel': []},
-            {"id": "Pintura-blt-Ltest20", "element": '//android.widget.TextView['
-                                                     f'@resource-id="com.ost.pintura:id/tv_name" and '
-                                                     f'@text="Pintura-blt-Ltest20"]', "result": None, "second_try_result": None, 'pairing_results_excel': []},
-            {"id": "Pintura-blt-L000308", "element": '//android.widget.TextView['
-                                                     f'@resource-id="com.ost.pintura:id/tv_name" and '
-                                                     f'@text="Pintura-blt-L000308"]', "result": None, "second_try_result": None, 'pairing_results_excel': []},
-            {"id": "Pintura-blt-L000329", "element": '//android.widget.TextView['
-                                                     f'@resource-id="com.ost.pintura:id/tv_name" and '
-                                                     f'@text="Pintura-blt-L000329"]', "result": None, "second_try_result": None, 'pairing_results_excel': []},
+                                                     f'@text="Pintura-blt-Ltet503"]', "result": None,
+             "second_try_result": None, 'pairing_results_excel': []}
         ]
         # 循环配网，直到 circle_times 次
         if remaining_iterations > 0:
@@ -302,7 +306,6 @@ class bluetooth_pairing_test:
                 print(f"第 {current_iteration} 次循环")
                 for device in devices:
                     try:
-                        print(f"找到设备：{device['id']}")
                         element = WebDriverWait(driver, 10).until(
                             ec.visibility_of_element_located((By.XPATH, device["element"]))
                         )
@@ -376,6 +379,7 @@ class bluetooth_pairing_test:
                                     (By.XPATH, element_value)
                                 )
                             )
+                            self.logger.info(f"element_value：{element_value},text:{element_key}")
                             if element_key == "wifi_list":
                                 find_result.click()
                                 self.logger.info(f"已选择WiFi：{wifi_name}")
