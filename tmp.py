@@ -274,23 +274,22 @@ class bluetooth_pairing_test:
         devices = [
             {"id": "Pintura-blt-L000892", "element": '//android.widget.TextView['
                                                      f'@resource-id="com.ost.pintura:id/tv_name" and '
-                                                     f'@text="Pintura-blt-L000892"]', "result": None, "second_try_result": None},
+                                                     f'@text="Pintura-blt-L000892"]', "result": None, "second_try_result": None, 'pairing_results_excel': []},
             {"id": "Pintura-blt-Ltest20", "element": '//android.widget.TextView['
                                                      f'@resource-id="com.ost.pintura:id/tv_name" and '
-                                                     f'@text="Pintura-blt-Ltest20"]', "result": None, "second_try_result": None},
+                                                     f'@text="Pintura-blt-Ltest20"]', "result": None, "second_try_result": None, 'pairing_results_excel': []},
             {"id": "Pintura-blt-L000308", "element": '//android.widget.TextView['
                                                      f'@resource-id="com.ost.pintura:id/tv_name" and '
-                                                     f'@text="Pintura-blt-L000308"]', "result": None, "second_try_result": None},
+                                                     f'@text="Pintura-blt-L000308"]', "result": None, "second_try_result": None, 'pairing_results_excel': []},
             {"id": "Pintura-blt-L000329", "element": '//android.widget.TextView['
                                                      f'@resource-id="com.ost.pintura:id/tv_name" and '
-                                                     f'@text="Pintura-blt-L000329"]', "result": None, "second_try_result": None},
+                                                     f'@text="Pintura-blt-L000329"]', "result": None, "second_try_result": None, 'pairing_results_excel': []},
         ]
         # 循环配网，直到 circle_times 次
         if remaining_iterations > 0:
             column_names = [device["id"] for device in devices]
             column_names.append("耗时（S）")
             # 创建空列表用于存储每个设备的配网结果
-            pairing_results_excel = []
             total_time_list = []
             for i in range(remaining_iterations):
                 current_iteration += 1
@@ -502,7 +501,7 @@ class bluetooth_pairing_test:
                     # 将结果转换未对应的符号,并放入结果列表
                     for device in devices:
                         device_excel_result = self.device_results_report(device["result"], device["second_try_result"])
-                        pairing_results_excel.append(device_excel_result)
+                        device['pairing_results_excel'].append(device_excel_result)
                     total_time_list.append(total_time)
                     # 返回产品选择界面
                     driver.press_keycode(4)
@@ -541,9 +540,23 @@ class bluetooth_pairing_test:
        # 将列表赋值给字典
         pairing_result_dict = {}
         for device in devices:
-            pairing_result_dict["device['id']"] = pairing_results_excel
-
-
+            pairing_result_dict["device['id']"] = device['pairing_results_excel']
+        pairing_result_dict["耗时（S）"] = total_time_list
+        # 生成配网结果excel
+        pairing_result = pd.DataFrame(pairing_result_dict, columns=column_names)
+        pairing_result.index = pairing_result.index + 1
+        pairing_result.index.name = "序号"
+        self.logger.info(pairing_result)
+        # 先读取已有的内容
+        if os.path.exists(excel_file_name):
+            self.logger.info("检测到文件存在")
+            df = pd.read_excel(excel_file_name, index_col=0)
+            # 拼接已有的内容到excel
+            pairing_result = pd.concat([df, pairing_result], ignore_index=True)
+            pairing_result.index = pairing_result.index + 1
+        # 添加总计成功率
+        total_twice_pairing_fail = current_twice_pairing_fail + twice_paired_fail_excel
+        new_index = f"总的成功率：{total_successful_rate}%\t二次配网失败次数：{total_twice_pairing_fail}"
 
 
 
