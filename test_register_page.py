@@ -172,6 +172,7 @@ class TestRegister:
             driver.find_element(By.XPATH, elements.Phone_Register_Region).click()
             logger.info("已点击地区")
             driver.find_element(By.XPATH, region_element).click()
+            logger.info("已选择地区")
         except(selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
             logger.error("未找地区相关元素")
 
