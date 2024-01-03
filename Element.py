@@ -194,6 +194,7 @@ class Element_version:
     En_Phone_Register_1 = '//android.widget.TextView[@text="+1"]'
     # 此元素无法通过sendkeys输入，需要通过虚拟键盘
     Ch_Phone_Register_PhoneNumber = '//android.view.View[@resource-id="phoneCode"]/android.view.View/android.widget.EditText'
+    En_Phone_Register_PhoneNumber = '//android.view.View[@resource-id="phoneCode"]/android.view.View/android.widget.EditText'
     Ch_Phone_Register_Nickname = '(//android.view.View[@resource-id="input"])[1]/android.view.View/android.widget.EditText'
     # 密码输入元素输入后元素会消失(已解决该问题)
     Ch_Phone_Register_Passwd = '(//android.view.View[@resource-id="input"])[2]/android.view.View/android.widget.EditText'

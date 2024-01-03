@@ -40,7 +40,7 @@ class TestRegister:
 
     @pytest.fixture(scope="session", autouse=True)
     def info(self):
-        app_language = "English"
+        app_language = "Chinese"
         region = "Chinese"
         register_type = 'phone'
         elements = Element.Element_version
@@ -132,11 +132,17 @@ class TestRegister:
             driver.press_keycode(key_code)
 
     # 输入手机号
-    def phone_number_input(self, driver, elements, phone, logger):
-        logger.info("开始查找")
+    def phone_number_input(self, driver, elements, app_language, phone, logger):
+        if app_language == "English":
+            element = elements.En_Phone_Register_PhoneNumber
+        elif app_language == "Chinese":
+            element = elements.Cn_Phone_Register_PhoneNumber
+        else:
+            logger.error("请选择语言")
+            element = None
         try:
-            logger.info(f"xpath：{elements.Ch_Phone_Register_PhoneNumber}")
-            driver.find_element(By.XPATH)
+            logger.info(f"xpath：{element}")
+            driver.find_element(By.XPATH, element).click()
             logger.info("已点击手机号输入框")
             # 由于文本框不支持sendkeys操作，所以使用虚拟键盘输入
             self.virtural_keyboard_input(driver, phone)
