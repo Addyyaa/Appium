@@ -26,7 +26,6 @@ class TestRegister:
         driver.implicitly_wait(10)
         version = VersionSelection.VersionSelection(driver)
         version.version_selection(region, app_language)
-        sleep(2)
         logger = logging.getLogger(__name__)
 
         # 在 setup 中调用 goto_register_page
