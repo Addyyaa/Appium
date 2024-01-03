@@ -80,42 +80,106 @@ class TestRegister:
         touch.tap(x=x, y=y).perform()
 
     def area_code_select(self, driver, elements, app_language, logger, region):
+        try:
+            if region == "Chinese":
+                code_text = "中国大陆"
+                code_area = elements.Ch_Phone_Register_86
+            elif region == "English":
+                code_text = "美国"
+                code_area = elements.En_Phone_Register_1
+            else:
+                code_text = None
+                code_area = None
+                logger.error("请输入国家名称或国家代号")
+            if app_language == "English":
+                driver.find_element(By.XPATH, elements.En_Phone_Register_AreaCodeList).click()
+                sleep(2)
+                self.area_code_click(driver)
+                logger.info("已点击搜索框")
+                # 选择区号
+                driver.find_element(By.XPATH, elements.Ch_Phone_Register_AreaCode_Search).send_keys(code_text)
+                logger.info("已发送搜索文本")
+                driver.hide_keyboard()
+                logger.info("已关闭虚拟键盘")
+                driver.find_element(By.XPATH, code_area).click()
+            elif app_language == "Chinese":
+                driver.find_element(By.XPATH, elements.Ch_Phone_Register_AreaCodeList).click()
+                sleep(2)
+                self.area_code_click(driver)
+                logger.info("已点击搜索框")
+                # 选择区号
+                driver.find_element(By.XPATH, elements.Ch_Phone_Register_AreaCode_Search).send_keys(code_text)
+                logger.info("已发送搜索文本")
+                driver.hide_keyboard()
+                logger.info("已关闭虚拟键盘")
+                driver.find_element(By.XPATH, code_area).click()
+            else:
+                logger.error("请输入正确的语言")
+        except (selenium.common.exceptions.TimeoutException,
+                selenium.common.exceptions.NoSuchElementException):
+            logger.error("未找到区号列表")
+
+    # 使用虚拟键盘输入数字
+    def virtural_keyboard_input(self, driver, data):
+        for digit in data:
+            digit = int(digit)
+            key_code = digit + 7  # 转换成对应的键码
+            driver.press_keycode(key_code)
+
+    # 输入手机号
+    def phone_number_input(self, driver, elements, phone, logger):
+        try:
+            driver.find_element(By.XPATH, elements.Ch_Phone_Register_PhoneNumber).click()
+            logger.info("已点击手机号输入框")
+            # 由于文本框不支持sendkeys操作，所以使用虚拟键盘输入
+            self.virtural_keyboard_input(driver, phone)
+            logger.info("已输入手机号")
+            driver.hide_keyboard()
+            logger.info("已关闭虚拟键盘")
+        except(selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
+            logger.error("未找到手机号输入框")
+
+    def nickname_input(self, driver, elements, nickname, logger):
+        try:
+            driver.find_element(By.XPATH, elements.Ch_Phone_Register_Nickname).send_keys(nickname)
+            logger.info("已输入昵称")
+        except(selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
+            logger.error("未找到昵称输入框")
+
+    def password_input(self, driver, elements, password, logger):
+        try:
+            driver.find_element(By.XPATH, elements.Ch_Phone_Register_Passwd).send_keys(password)
+            logger.info("已输入密码")
+        except(selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
+            logger.error("未找到密码输入框")
+
+    def confirm_password_input(self, driver, elements, password, logger):
+        try:
+            driver.find_element(By.XPATH, elements.Ch_Phone_Register_ConfirmPasswd).send_keys(password)
+            logger.info("已输入确认密码")
+        except(selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
+            logger.error("未找到确认密码输入框")
+
+    def region_selection(self, driver, elements, logger, region):
         if region == "Chinese":
-            code_text = "中国大陆"
-            code_area = elements.Ch_Phone_Register_86
+            region_element = elements.Phone_Region_Selection_China
         elif region == "English":
-            code_text = "美国"
-            code_area = elements.En_Phone_Register_1
+            region_element = elements.Phone_Region_Selection_USA
         else:
-            code_text = None
-            code_area = None
-            logger.error("请输入国家名称或国家代号")
-        if app_language == "English":
-            driver.find_element(By.XPATH, elements.En_Phone_Register_AreaCodeList).click()
-            sleep(2)
-            self.area_code_click(driver)
-            logger.info("已点击搜索框")
-            # 选择区号
-            driver.find_element(By.XPATH, elements.Ch_Phone_Register_AreaCode_Search).send_keys(code_text)
-            logger.info("已发送搜索文本")
-            driver.hide_keyboard()
-            logger.info("已关闭虚拟键盘")
-            driver.find_element(By.XPATH, code_area).click()
-        elif app_language == "Chinese":
-            driver.find_element(By.XPATH, elements.Ch_Phone_Register_AreaCodeList).click()
-            sleep(2)
-            self.area_code_click(driver)
-            logger.info("已点击搜索框")
-            # 选择区号
-            driver.find_element(By.XPATH, elements.Ch_Phone_Register_AreaCode_Search).send_keys(code_text)
-            logger.info("已发送搜索文本")
-            driver.hide_keyboard()
-            logger.info("已关闭虚拟键盘")
-            driver.find_element(By.XPATH, code_area).click()
-        else:
-            logger.error("请输入正确的语言")
+            region_element = elements.Phone_Region_Selection_Cancel
+            logger.error("没有地域信息，取消地域操作")
+        try:
+            driver.find_element(By.XPATH, elements.Phone_Register_Region).click()
+            logger.info("已点击地区")
+        except(selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
+            logger.error("未找地区相关元素")
+
     def test_casse(self, setup, info):
         app_language, region, elements, tips_element, config = info
         driver = setup["driver"]
         logger = setup["logger"]
         self.area_code_select(driver, elements, app_language, logger, region)
+        self.phone_number_input(driver, elements, config.phone, logger)
+        self.nickname_input(driver, elements, config.nick_name, logger)
+        self.password_input(driver, elements, config.phone_password, logger)
+        self.confirm_password_input(driver, elements, config.phone_confirm_password, logger)

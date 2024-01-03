@@ -221,5 +221,14 @@ class Element_version:
                                   '5]/android.view.View/android.widget.EditText'
     # 此元素无法通过sendkeys输入，需要通过虚拟键盘
     Ch_Email_RegisterButton = '//android.widget.TextView[@text="注 册"]'
+    # 中英文通用
+    Phone_Register_Region = '//android.webkit.WebView[@text="pages/mine/reg/index[2]"]/android.view.View[8]/child::*[1]'
+    # 地域选择
+    Phone_Region_Selection_China = '//android.webkit.WebView[@text="pages/mine/reg/index[2]"]/android.view.View[' \
+                             '9]/child::*[1]'
+    Phone_Region_Selection_USA = '//android.webkit.WebView[@text="pages/mine/reg/index[2]"]/android.view.View[' \
+                             '9]/child::*[2]'
+    Phone_Region_Selection_Cancel = '//android.webkit.WebView[@text="pages/mine/reg/index[2]"]/android.view.View[' \
+                             '9]/child::*[3]'
 
 
