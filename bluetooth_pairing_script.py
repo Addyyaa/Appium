@@ -83,7 +83,8 @@ class bluetooth_pairing_test:
         print(f"最后一次配网次数：{last_attempt}")
         return fail_count, last_attempt, total_succecc_rate_no
 
-    def delete_line_by_number(self, file_path, line_number):
+    @staticmethod
+    def delete_line_by_number(file_path, line_number):
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
                 lines = file.readlines()
@@ -127,7 +128,8 @@ class bluetooth_pairing_test:
             self.logger.error(f"找不到文件：{file_path}, 请确认是否第一次运行脚本")
             return 0, 0, 0
 
-    def set_adaptive_column_width(self, writer, data_frame, work_sheet_name="配网结果"):
+    @staticmethod
+    def set_adaptive_column_width(writer, data_frame, work_sheet_name="配网结果"):
         """
         :param writer:
         :param data_frame:
@@ -140,9 +142,11 @@ class bluetooth_pairing_test:
         # 计算索引列（序号列）的宽度
         index_width = len(str(data_frame.index.name).encode('utf-8'))
         # 计算每列的最大字符宽度
-        max_widths = data_frame.astype(str).map(lambda x: len(x.encode('utf-8'))).max().values  # map会遍历data_frame所有元素，而astype会以列的方式将data_frame转换为Series
+        max_widths = data_frame.astype(str).map(lambda x: len(x.encode('utf-8'))).max().values  # map会遍历data_frame
+        # 所有元素，而astype会以列的方式将data_frame转换为Series
+
         # 计算整体最大宽度
-        widths = [max(x, y) for x, y in zip(column_widths+2, max_widths+2)]
+        widths = [max(x, y) + 2 for x, y in zip(column_widths, max_widths)]
         widths.insert(0, index_width)
         # 设置每列的宽度
         worksheet = writer.sheets[work_sheet_name]  # 获取工作表对象
@@ -157,7 +161,8 @@ class bluetooth_pairing_test:
                 cell = worksheet[f"{col_letter}{row_num}"]
                 cell.alignment = Alignment(horizontal='center', vertical='center')
 
-    def set_font_color(self, writer, data_frame, column_names, sheet_name="sheet1", color="FFFFFF",
+    @staticmethod
+    def set_font_color(writer, data_frame, column_names, sheet_name="sheet1", color="FFFFFF",
                        colors_condition=False):
         # 设置字体颜色
         font_color = color
@@ -185,7 +190,8 @@ class bluetooth_pairing_test:
                     if cell.row > 1:  # 排除列名
                         cell.font = Font(color=font_color)
 
-    def device_results_report(self, device_result, second_try_result):
+    @staticmethod
+    def device_results_report(device_result, second_try_result):
         if device_result == "配网成功":
             device_excel_result = "\u2713"
         elif device_result == "连接失败" and second_try_result == "二次配网成功":
@@ -259,28 +265,33 @@ class bluetooth_pairing_test:
             # 读取配网结果xlsx文件，获取已配网的次数
             count_excel, fail_count_excel, twice_paired_fail_excel = self.excel_reader(excel_file_name)
         one_time_setup_successful = 0
-        circle_times = 4
+        circle_times = 6
         remaining_iterations = circle_times - count
         encoding = 'utf-8'
         file_name = file_name
         current_iteration = 0
         current_twice_pairing_fail = 0
+        total_time = 0
         wifi_name = "zhancheng"
         wifi_passwd = "nanjingzhancheng"
         # 设备信息
         devices = [
             {"id": "Pintura-blt-L000892", "element": '//android.widget.TextView['
                                                      f'@resource-id="com.ost.pintura:id/tv_name" and '
-                                                     f'@text="Pintura-blt-L000892"]', "result": "", "second_try_result": "", 'pairing_results_excel': []},
+                                                     f'@text="Pintura-blt-L000892"]', "result": "",
+             "second_try_result": "", 'pairing_results_excel': []},
             {"id": "Pintura-blt-Ltest20", "element": '//android.widget.TextView['
                                                      f'@resource-id="com.ost.pintura:id/tv_name" and '
-                                                     f'@text="Pintura-blt-Ltest20"]', "result": "", "second_try_result": "", 'pairing_results_excel': []},
+                                                     f'@text="Pintura-blt-Ltest20"]', "result": "",
+             "second_try_result": "", 'pairing_results_excel': []},
             {"id": "Pintura-blt-L000308", "element": '//android.widget.TextView['
                                                      f'@resource-id="com.ost.pintura:id/tv_name" and '
-                                                     f'@text="Pintura-blt-L000308"]', "result": "", "second_try_result": "", 'pairing_results_excel': []},
+                                                     f'@text="Pintura-blt-L000308"]', "result": "",
+             "second_try_result": "", 'pairing_results_excel': []},
             {"id": "Pintura-blt-L000329", "element": '//android.widget.TextView['
                                                      f'@resource-id="com.ost.pintura:id/tv_name" and '
-                                                     f'@text="Pintura-blt-L000329"]', "result": "",  "second_try_result": "", 'pairing_results_excel': []}
+                                                     f'@text="Pintura-blt-L000329"]', "result": "",
+             "second_try_result": "", 'pairing_results_excel': []}
         ]
         # 循环配网，直到 circle_times 次
         if remaining_iterations > 0:
@@ -318,7 +329,9 @@ class bluetooth_pairing_test:
                             try:
                                 product_selector = WebDriverWait(driver, 10).until(
                                     ec.visibility_of_element_located((By.XPATH,
-                                                                      '//android.webkit.WebView[@text="pages/work/addAhost1[4]"]/android.view.View[3]'))
+                                                                      '//android.webkit.WebView['
+                                                                      '@text="pages/work/addAhost1['
+                                                                      '4]"]/android.view.View[3]'))
                                 )
                                 product_selector.click()
                             except selenium.common.exceptions.TimeoutException:
@@ -352,7 +365,10 @@ class bluetooth_pairing_test:
                         try:
                             wifi_list = WebDriverWait(driver, 10).until(
                                 ec.visibility_of_element_located((By.XPATH,
-                                                                  '//android.view.ViewGroup[@resource-id="com.ost.pintura:id/swipe_layout"]/android.widget.LinearLayout/android.widget.FrameLayout[1]/android.view.View[2]'))
+                                                                  '//android.view.ViewGroup['
+                                                                  '@resource-id="com.ost.pintura:id/swipe_layout'
+                                                                  '"]/android.widget.LinearLayout/android.widget'
+                                                                  '.FrameLayout[1]/android.view.View[2]'))
                             )
                             wifi_list.click()
                             driver.implicitly_wait(1)
@@ -387,7 +403,8 @@ class bluetooth_pairing_test:
                                 self.logger.info("已点击连接按钮")
                             else:
                                 self.logger.error("未知元素")
-                        except:
+                        except (selenium.common.exceptions.TimeoutException,
+                                selenium.common.exceptions.NoSuchElementException):
                             if element_key == "wifi_list":
                                 self.logger.error(f"未找到wifi：{wifi_name}")
                             elif element_key == "wifi_passwd_element":
@@ -431,7 +448,9 @@ class bluetooth_pairing_test:
                         try:
                             device_complete = WebDriverWait(driver, 10).until(
                                 ec.visibility_of_element_located((By.XPATH,
-                                                                  f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and @text="{device["id"]}"]/following-sibling::*[1]'))
+                                                                  f'//android.widget.TextView['
+                                                                  f'@resource-id="com.ost.pintura:id/tv_name" and '
+                                                                  f'@text="{device["id"]}"]/following-sibling::*[1]'))
                             )
                             device_result = device_complete.text
                             device['result'] = device_result
@@ -439,7 +458,8 @@ class bluetooth_pairing_test:
                             # 统计配网成功的次数
                             if device_result == "配网成功":
                                 devices_successful += 1
-                        except selenium.common.exceptions.NoSuchElementException:
+                        except (selenium.common.exceptions.NoSuchElementException,
+                                selenium.common.exceptions.NoSuchElementException):
                             self.logger.error(f"获取配网结果元素失败")
                     if devices_successful == len(devices):
                         one_time_setup_successful += 1
@@ -458,11 +478,13 @@ class bluetooth_pairing_test:
                                     ec.visibility_of_element_located(
                                         (By.XPATH,
                                          f'//android.widget.TextView['
-                                         f'@resource-id="com.ost.pintura:id/tv_name" and @text="{device["id"]}"]/following-sibling::*[2]')
+                                         f'@resource-id="com.ost.pintura:id/tv_name" and '
+                                         f'@text="{device["id"]}"]/following-sibling::*[2]')
                                     )
                                 ).click()
                                 self.logger.info("点击重连")
-                            except selenium.common.exceptions.NoSuchElementException:
+                            except (selenium.common.exceptions.NoSuchElementException,
+                                    selenium.common.exceptions.TimeoutException):
                                 self.logger.error("找不到配网失败的设备")
                             # 等待重新配网完成
                             try:
@@ -486,7 +508,10 @@ class bluetooth_pairing_test:
                                 self.logger.info("二次配网完成，获取元素文本")
                                 result_text = WebDriverWait(driver, 10).until(
                                     ec.visibility_of_element_located((By.XPATH,
-                                                                      f'//android.widget.TextView[@resource-id="com.ost.pintura:id/tv_name" and @text="{device["id"]}"]/following-sibling::*[1]'))
+                                                                      f'//android.widget.TextView['
+                                                                      f'@resource-id="com.ost.pintura:id/tv_name" and '
+                                                                      f'@text="{device["id"]}"]/following-sibling::*['
+                                                                      f'1]'))
                                 ).text
                                 if result_text == "配网成功":
                                     self.logger.info("二次配网成功")
@@ -515,7 +540,8 @@ class bluetooth_pairing_test:
                         product_selector = WebDriverWait(driver, 10).until(
                             ec.visibility_of_element_located((By.XPATH,
 
-                                                              '//android.webkit.WebView[@text="pages/work/addAhost1[4]"]/android.view.View[3]'))
+                                                              '//android.webkit.WebView[@text='
+                                                              '"pages/work/addAhost1[4]"]/android.view.View[3]'))
                         )
                         product_selector.click()
                     except selenium.common.exceptions.TimeoutException:
@@ -581,6 +607,7 @@ class bluetooth_pairing_test:
                 sys.exit()
             # 关闭会话防止手机端出错
             driver.quit()
+
 
 te = bluetooth_pairing_test()
 te.detect_network_setup_interface()
