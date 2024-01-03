@@ -40,7 +40,7 @@ class TestRegister:
 
     @pytest.fixture(scope="session", autouse=True)
     def info(self):
-        app_language = "Chinese"
+        app_language = "English"
         region = "Chinese"
         register_type = 'phone'
         elements = Element.Element_version
@@ -136,7 +136,7 @@ class TestRegister:
         if app_language == "English":
             element = elements.En_Phone_Register_PhoneNumber
         elif app_language == "Chinese":
-            element = elements.Cn_Phone_Register_PhoneNumber
+            element = elements.Ch_Phone_Register_PhoneNumber
         else:
             logger.error("请选择语言")
             element = None
@@ -198,7 +198,7 @@ class TestRegister:
         driver = setup["driver"]
         logger = setup["logger"]
         # self.area_code_select(driver, elements, app_language, logger, region)
-        self.phone_number_input(driver, elements, config.phone, logger)
+        self.phone_number_input(driver, elements, app_language, config.phone, logger)
         # self.nickname_input(driver, elements, config.nick_name, logger)
         # self.password_input(driver, elements, config.phone_password, logger)
         # self.confirm_password_input(driver, elements, config.phone_confirm_password, logger)
