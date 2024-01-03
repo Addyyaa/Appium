@@ -14,6 +14,7 @@ class VersionSelection:
         judege = self.driver.find_element(by='id', value=self.element.judege)
         judege_content = judege.text
         sleep(0.5)
+        print("开始识别中英文版本")
         if judege_content == "同意并接受":
             print('判断通过')
             judege.click()
@@ -51,7 +52,6 @@ class VersionSelection:
                 self.driver.find_element(by='xpath', value=self.element.En_Confirm).click()
             else:
                 print("error")
-            print("开始识别中英文版本")
         elif judege_content == "ACCEPT":
             print("已识别为英文")
             judege.click()

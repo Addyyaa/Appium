@@ -14,6 +14,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 import phonenumbers
 import ElementSMS
+import pdb
 
 
 class TestRegister:
@@ -25,6 +26,7 @@ class TestRegister:
         driver.implicitly_wait(10)
         version = VersionSelection.VersionSelection(driver)
         version.version_selection(region, app_language)
+        sleep(2)
         logger = logging.getLogger(__name__)
 
         # 在 setup 中调用 goto_register_page
@@ -39,7 +41,7 @@ class TestRegister:
 
     @pytest.fixture(scope="session", autouse=True)
     def info(self):
-        app_language = "Chinese"
+        app_language = "English"
         region = "Chinese"
         register_type = 'phone'
         elements = Element.Element_version
@@ -57,12 +59,14 @@ class TestRegister:
                         ec.visibility_of_element_located((By.XPATH, elements.Ch_LoginPage_Register))).click()
                 except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
                     logger.error("未找到注册按钮")
+                    pytest.fail("没有找到注册按钮")
             elif app_language == 'English':
                 try:
                     WebDriverWait(driver, 10).until(
                         ec.visibility_of_element_located((By.XPATH, elements.En_LoginPage_Register))).click()
                 except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
                     logger.error("未找到注册按钮")
+                    pytest.fail("没有找到注册按钮")
             else:
                 logger.error("请配置正确的语言")
 
@@ -97,7 +101,7 @@ class TestRegister:
                 self.area_code_click(driver)
                 logger.info("已点击搜索框")
                 # 选择区号
-                driver.find_element(By.XPATH, elements.Ch_Phone_Register_AreaCode_Search).send_keys(code_text)
+                driver.find_element(By.XPATH, elements.En_Phone_Register_AreaCode_Search).send_keys(code_text)
                 logger.info("已发送搜索文本")
                 driver.hide_keyboard()
                 logger.info("已关闭虚拟键盘")
@@ -118,6 +122,8 @@ class TestRegister:
         except (selenium.common.exceptions.TimeoutException,
                 selenium.common.exceptions.NoSuchElementException):
             logger.error("未找到区号列表")
+            pytest.fail("未找到区号列表")
+
 
     # 使用虚拟键盘输入数字
     def virtural_keyboard_input(self, driver, data):
@@ -128,16 +134,18 @@ class TestRegister:
 
     # 输入手机号
     def phone_number_input(self, driver, elements, phone, logger):
+        logger.info("开始查找")
         try:
-            driver.find_element(By.XPATH, elements.Ch_Phone_Register_PhoneNumber).click()
+            logger.info(f"xpath：{elements.Ch_Phone_Register_PhoneNumber}")
+            driver.find_element(By.XPATH)
             logger.info("已点击手机号输入框")
             # 由于文本框不支持sendkeys操作，所以使用虚拟键盘输入
             self.virtural_keyboard_input(driver, phone)
             logger.info("已输入手机号")
             driver.hide_keyboard()
             logger.info("已关闭虚拟键盘")
-        except(selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
-            logger.error("未找到手机号输入框")
+        except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException) as e:
+            logger.error(f"未找到手机号输入框,异常：{e}")
 
     def nickname_input(self, driver, elements, nickname, logger):
         try:
@@ -145,6 +153,7 @@ class TestRegister:
             logger.info("已输入昵称")
         except(selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
             logger.error("未找到昵称输入框")
+            pytest.fail("未找到昵称输入框")
 
     def password_input(self, driver, elements, password, logger):
         try:
@@ -152,6 +161,7 @@ class TestRegister:
             logger.info("已输入密码")
         except(selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
             logger.error("未找到密码输入框")
+            pytest.fail("未找到密码输入框")
 
     def confirm_password_input(self, driver, elements, password, logger):
         try:
@@ -159,6 +169,7 @@ class TestRegister:
             logger.info("已输入确认密码")
         except(selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
             logger.error("未找到确认密码输入框")
+            pytest.fail("未找到确认密码输入框")
 
     def region_selection(self, driver, elements, logger, region):
         if region == "Chinese":
@@ -175,14 +186,15 @@ class TestRegister:
             logger.info("已选择地区")
         except(selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
             logger.error("未找地区相关元素")
+            pytest.fail("未找地区相关元素")
 
     def test_casse(self, setup, info):
         app_language, region, elements, tips_element, config = info
         driver = setup["driver"]
         logger = setup["logger"]
-        self.area_code_select(driver, elements, app_language, logger, region)
+        # self.area_code_select(driver, elements, app_language, logger, region)
         self.phone_number_input(driver, elements, config.phone, logger)
-        self.nickname_input(driver, elements, config.nick_name, logger)
-        self.password_input(driver, elements, config.phone_password, logger)
-        self.confirm_password_input(driver, elements, config.phone_confirm_password, logger)
-        self.region_selection(driver, elements, logger, region)
+        # self.nickname_input(driver, elements, config.nick_name, logger)
+        # self.password_input(driver, elements, config.phone_password, logger)
+        # self.confirm_password_input(driver, elements, config.phone_confirm_password, logger)
+        # self.region_selection(driver, elements, logger, region)
