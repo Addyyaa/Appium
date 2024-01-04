@@ -90,6 +90,7 @@ class TestRegister:
         print(f"手机像素为：{screen_height} * {screen_width}")
         touch = TouchAction(driver)
         touch.tap(x=x, y=y).perform()
+        # TODO 需要增加自动根据屏幕大小计算元素xy坐标
 
     def area_code_select(self, driver, elements, app_language, logger, region):
         try:
@@ -240,3 +241,4 @@ class TestRegister:
         self.password_input(driver, elements, config.phone_password, logger)
         self.confirm_password_input(driver, elements, config.phone_confirm_password, logger)
         self.region_selection(driver, elements, logger, region)
+        # TODO 需要解决app英文，地域美国的问题
