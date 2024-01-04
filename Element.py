@@ -201,7 +201,7 @@ class Element_version:
     # 密码输入后的密码元素
     Ch_Phone_Register_Passwd_AfterInput = '(//android.view.View[@resource-id="input"])[2]/android.view.View/child::*[1]'
     Ch_Phone_Register_ConfirmPasswd = 'android.widget.EditText'
-    Ch_Phone_Register_Region = "android.widget.TextView[text='Country:China'], android.widget.TextView[text='地区:中国大陆']"
+    Ch_Phone_Register_Region = '//android.widget.TextView[@index="0" and @text="地区:中国大陆"] | //android.widget.TextView[@index="0" and @text="地区:美国"] | //*[@text="United States"] | //*[@text="Country:China"]'
     Ch_Phone_Register_RegionChina = '//android.widget.TextView[@text="中国大陆"]'
     Ch_Phone_Register_RegionUSA = '//android.widget.TextView[@text="美国"]'
     Ch_Phone_Register_RegionCancel = '//android.widget.TextView[@text="取消"]'
@@ -229,5 +229,6 @@ class Element_version:
     En_Phone_Region_Selection_China = '//android.view.View[@index="15"]/child::*[1]'
     En_Phone_Region_Selection_America = '//android.view.View[@index="15"]/child::*[2]'
     En_Phone_Region_Selection_Cancel = '//android.view.View[@index="15"]/child::*[3]'
+    Selection_Cancel = '//android.view.View[@index="14"]/child::*[3] | //android.view.View[@index="15"]/child::*[3]'
 
 

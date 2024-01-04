@@ -1,4 +1,6 @@
 from appium import webdriver
+
+
 def get_driver():
     desired_caps = {
         'platformName': 'Android',
@@ -12,4 +14,3 @@ def get_driver():
     driver = webdriver.Remote('http://127.0.0.1:4723/wd/hub', desired_caps)
     driver.implicitly_wait(10)
     return driver
-
