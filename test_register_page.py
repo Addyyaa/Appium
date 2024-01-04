@@ -40,7 +40,7 @@ class TestRegister:
     @pytest.fixture(scope="session", autouse=True)
     def info(self):
         app_language = "English"
-        region = "Chinese"
+        region = "English"
         register_type = 'phone'
         elements = Element.Element_version
         tips_element = ElementTips.register_page_tips
@@ -208,8 +208,9 @@ class TestRegister:
             logger.error("未找到确认密码输入框")
             pytest.fail("未找到确认密码输入框")
 
-    def region_selection(self, driver, elements, logger, region):
-        if region == "Chinese":
+    def region_selection(self, driver, elements, logger, region, app_language):
+        # TODO 需要解决地域选择问题
+        if region == "Chinese" and app_language == "English":
             region_element = elements.Phone_Region_Selection_China
         elif region == "English":
             region_element = elements.Phone_Region_Selection_America
@@ -241,4 +242,4 @@ class TestRegister:
         self.password_input(driver, elements, config.phone_password, logger)
         self.confirm_password_input(driver, elements, config.phone_confirm_password, logger)
         self.region_selection(driver, elements, logger, region)
-        # TODO 需要解决app英文，地域美国的问题
+

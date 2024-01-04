@@ -226,5 +226,8 @@ class Element_version:
     Phone_Region_Selection_China = '//android.view.View[@index="14"]/child::*[1]'
     Phone_Region_Selection_America = '//android.view.View[@index="14"]/child::*[2]'
     Phone_Region_Selection_Cancel = '//android.view.View[@index="14"]/child::*[3]'
+    En_Phone_Region_Selection_China = '//android.view.View[@index="15"]/child::*[1]'
+    En_Phone_Region_Selection_America = '//android.view.View[@index="15"]/child::*[2]'
+    En_Phone_Region_Selection_Cancel = '//android.view.View[@index="15"]/child::*[3]'
 
 
