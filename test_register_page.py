@@ -79,13 +79,21 @@ class TestRegister:
     # 手机区号根据x、y点击
     @staticmethod
     def xy_click(x=None, y=None):
+        """
+        当前手机像素为 1080 * 2304
+        :param x: 横坐标百分比
+        :param y: 纵坐标百分比
+        """
         # 获取手机屏幕像素
         screen_size = driver.get_window_size()
         screen_width = screen_size["width"]
         screen_height = screen_size["height"]
         print(f"手机像素为：{screen_height} * {screen_width}")
+        x = round(x * screen_width/100)
+        y = round(y * screen_height/100)
+        logger.info(f"x={x}, y={y}")
         touch = TouchAction(driver)
-        touch.tap(x=x, y=y).perform()
+        touch.tap(x, y).perform()
         # TODO 需要增加自动根据屏幕大小计算元素xy坐标
 
     def area_code_select(self, info, region):
@@ -104,7 +112,7 @@ class TestRegister:
                     ec.visibility_of_element_located((By.XPATH, elements.En_Phone_Register_AreaCodeList))
                 ).click()
                 sleep(0.5)
-                self.xy_click(500, 1090)
+                self.xy_click(46.29, 47.31)
                 logger.info("已点击搜索框")
                 # 选择区号
                 self.virtural_keyboard_input(code_text)
@@ -112,11 +120,11 @@ class TestRegister:
                 driver.hide_keyboard()
                 logger.info("已关闭虚拟键盘")
                 sleep(0.5)
-                self.xy_click(500, 1370)
+                self.xy_click(46.30, 59.46)
             elif app_language == "Chinese":
                 driver.find_element(By.XPATH, elements.Ch_Phone_Register_AreaCodeList).click()
                 sleep(0.5)
-                self.xy_click(500, 1080)
+                self.xy_click(46.30, 46.88)
                 logger.info("已点击搜索框")
                 # 选择区号
                 self.virtural_keyboard_input(code_text)
@@ -124,7 +132,7 @@ class TestRegister:
                 driver.hide_keyboard()
                 logger.info("已关闭虚拟键盘")
                 sleep(0.5)
-                self.xy_click(500, 1370)
+                self.xy_click(46.30, 59.46)
             else:
                 logger.error("请输入正确的语言")
         except (selenium.common.exceptions.TimeoutException,
