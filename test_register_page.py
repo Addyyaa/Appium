@@ -94,7 +94,6 @@ class TestRegister:
         logger.info(f"x={x}, y={y}")
         touch = TouchAction(driver)
         touch.tap(x=x, y=y).perform()
-        # TODO 需要增加自动根据屏幕大小计算元素xy坐标
 
     def area_code_select(self, info, region):
         app_language, region_info, elements, tips_element, config = info
@@ -257,6 +256,26 @@ class TestRegister:
             print(driver.page_source)
             logger.error("未找地区相关元素")
             pytest.fail("未找地区相关元素")
+
+    def verification_code_get(self):
+        # TODO
+        pass
+
+    def verification_code_input(self):
+        # TODO
+        pass
+
+    def register_button_click(self):
+        # TODO
+        pass
+
+    def user_agreement_checkbox(self):
+        # TODO
+        pass
+
+
+
+
 
     def test_casse(self, setup, info):
         self.area_code_select(info, "Chinese")
