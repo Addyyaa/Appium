@@ -200,8 +200,8 @@ class Element_version:
     Ch_Phone_Register_Passwd = '(//android.view.View[@resource-id="input"])[2]/android.view.View/android.widget.EditText'
     # 密码输入后的密码元素
     Ch_Phone_Register_Passwd_AfterInput = '(//android.view.View[@resource-id="input"])[2]/android.view.View/child::*[1]'
-    Ch_Phone_Register_ConfirmPasswd = '(//android.view.View[@resource-id="input"])[3]/android.view.View/android.widget.EditText'
-    Ch_Phone_Register_Region = '//android.webkit.WebView[@text="pages/mine/reg/index[2]"]/android.view.View[8]'
+    Ch_Phone_Register_ConfirmPasswd = 'android.widget.EditText'
+    Ch_Phone_Register_Region = "android.widget.TextView[text='Country:China'], android.widget.TextView[text='地区:中国大陆']"
     Ch_Phone_Register_RegionChina = '//android.widget.TextView[@text="中国大陆"]'
     Ch_Phone_Register_RegionUSA = '//android.widget.TextView[@text="美国"]'
     Ch_Phone_Register_RegionCancel = '//android.widget.TextView[@text="取消"]'
@@ -222,13 +222,9 @@ class Element_version:
     # 此元素无法通过sendkeys输入，需要通过虚拟键盘
     Ch_Email_RegisterButton = '//android.widget.TextView[@text="注 册"]'
     # 中英文通用
-    Phone_Register_Region = '//android.webkit.WebView[@text="pages/mine/reg/index[2]"]/android.view.View[8]/child::*[1]'
     # 地域选择
-    Phone_Region_Selection_China = '//android.webkit.WebView[@text="pages/mine/reg/index[2]"]/android.view.View[' \
-                             '9]/child::*[1]'
-    Phone_Region_Selection_USA = '//android.webkit.WebView[@text="pages/mine/reg/index[2]"]/android.view.View[' \
-                             '9]/child::*[2]'
-    Phone_Region_Selection_Cancel = '//android.webkit.WebView[@text="pages/mine/reg/index[2]"]/android.view.View[' \
-                             '9]/child::*[3]'
+    Phone_Region_Selection_China = '//android.view.View[@index="14"]/child::*[1]'
+    Phone_Region_Selection_America = '//android.view.View[@index="14"]/child::*[2]'
+    Phone_Region_Selection_Cancel = '//android.view.View[@index="14"]/child::*[3]'
 
 

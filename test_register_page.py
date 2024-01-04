@@ -27,7 +27,6 @@ class TestRegister:
         version = VersionSelection.VersionSelection(driver)
         version.version_selection(region, app_language)
         logger = logging.getLogger(__name__)
-
         # 在 setup 中调用 goto_register_page
         goto_register_page(driver, elements, app_language, logger)
 
@@ -41,7 +40,7 @@ class TestRegister:
     @pytest.fixture(scope="session", autouse=True)
     def info(self):
         app_language = "English"
-        region = "English"
+        region = "China"
         register_type = 'phone'
         elements = Element.Element_version
         tips_element = ElementTips.register_page_tips
@@ -84,6 +83,11 @@ class TestRegister:
     # 手机区号根据x、y点击
     @staticmethod
     def xy_click(driver, x=None, y=None):
+        # 获取手机屏幕像素
+        screen_size = driver.get_window_size()
+        screen_width = screen_size["width"]
+        screen_height = screen_size["height"]
+        print(f"手机像素为：{screen_height} * {screen_width}")
         touch = TouchAction(driver)
         touch.tap(x=x, y=y).perform()
 
@@ -182,17 +186,24 @@ class TestRegister:
 
     def password_input(self, driver, elements, password, logger):
         try:
-            driver.find_element(By.XPATH, elements.Ch_Phone_Register_Passwd).send_keys(password)
+            WebDriverWait(driver, 10).until(
+                ec.visibility_of_element_located((By.XPATH, elements.Ch_Phone_Register_Passwd))
+            ).send_keys(password)
             logger.info("已输入密码")
         except(selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
+            print(driver.page_source)
             logger.error("未找到密码输入框")
             pytest.fail("未找到密码输入框")
 
     def confirm_password_input(self, driver, elements, password, logger):
         try:
-            driver.find_element(By.XPATH, elements.Ch_Phone_Register_ConfirmPasswd).send_keys(password)
+            elements = WebDriverWait(driver, 10).until(
+                ec.visibility_of_all_elements_located((By.CLASS_NAME, elements.Ch_Phone_Register_ConfirmPasswd))
+            )
+            elements[3].send_keys(password)
             logger.info("已输入确认密码")
         except(selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
+            print(driver.page_source)
             logger.error("未找到确认密码输入框")
             pytest.fail("未找到确认密码输入框")
 
@@ -200,16 +211,22 @@ class TestRegister:
         if region == "Chinese":
             region_element = elements.Phone_Region_Selection_China
         elif region == "English":
-            region_element = elements.Phone_Region_Selection_USA
+            region_element = elements.Phone_Region_Selection_America
         else:
             region_element = elements.Phone_Region_Selection_Cancel
             logger.error("没有地域信息，取消地域操作")
         try:
-            driver.find_element(By.XPATH, elements.Phone_Register_Region).click()
+            s = WebDriverWait(driver, 10).until(
+                ec.visibility_of_all_elements_located((By.CSS_SELECTOR, elements.Ch_Phone_Register_Region))
+            )
+            s[0].click()
             logger.info("已点击地区")
-            driver.find_element(By.XPATH, region_element).click()
+            WebDriverWait(driver, 10).until(
+                ec.visibility_of_element_located((By.XPATH, region_element))
+            ).click()
             logger.info("已选择地区")
         except(selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
+            print(driver.page_source)
             logger.error("未找地区相关元素")
             pytest.fail("未找地区相关元素")
 
@@ -222,4 +239,4 @@ class TestRegister:
         self.nickname_input(driver, elements, config.nick_name, logger)
         self.password_input(driver, elements, config.phone_password, logger)
         self.confirm_password_input(driver, elements, config.phone_confirm_password, logger)
-        # self.region_selection(driver, elements, logger, region)
+        self.region_selection(driver, elements, logger, region)
