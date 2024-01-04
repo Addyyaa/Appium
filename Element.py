@@ -189,7 +189,7 @@ class Element_version:
     Ch_Phone_Register_AreaCodeList = '//android.widget.TextView[@resource-id="country"]'
     En_Phone_Register_AreaCodeList = '//android.widget.TextView[@text=""]'
     Ch_Phone_Register_AreaCode_Search = '//android.webkit.WebView[@text="pages/mine/reg/index[2]"]/android.view.View[5]/android.view.View/android.view.View/android.view.View/android.view.View[1]/android.view.View/android.view.View/android.view.View/android.widget.EditText'
-    En_Phone_Register_AreaCode_Search = '//android.webkit.WebView[@text="pages/mine/reg/index[3]"]/android.view.View[5]/android.view.View/android.view.View/android.view.View/android.view.View[1]/android.view.View/android.view.View/android.view.View/android.widget.EditText'
+    En_Phone_Register_AreaCode_Search = '//android.webkit.WebView[@text="pages/mine/reg/index[4]"]/android.view.View[5]/android.view.View/android.view.View/android.view.View/android.view.View[1]/android.view.View/android.view.View/android.view.View/android.widget.EditText'
     Ch_Phone_Register_86 = '(//android.widget.TextView[@text="+86"])[2]'
     En_Phone_Register_1 = '//android.widget.TextView[@text="+1"]'
     # 此元素无法通过sendkeys输入，需要通过虚拟键盘

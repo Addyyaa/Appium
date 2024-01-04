@@ -41,7 +41,7 @@ class TestRegister:
     @pytest.fixture(scope="session", autouse=True)
     def info(self):
         app_language = "English"
-        region = "Chinese"
+        region = "English"
         register_type = 'phone'
         elements = Element.Element_version
         tips_element = ElementTips.register_page_tips
@@ -56,11 +56,17 @@ class TestRegister:
                 try:
                     WebDriverWait(driver, 10).until(
                         ec.visibility_of_element_located((By.XPATH, elements.Ch_LoginPage_Register))).click()
+                    driver.press_keycode(4)
+                    WebDriverWait(driver, 10).until(
+                        ec.visibility_of_element_located((By.XPATH, elements.Ch_LoginPage_Register))).click()
                 except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
                     logger.error("未找到注册按钮")
                     pytest.fail("没有找到注册按钮")
             elif app_language == 'English':
                 try:
+                    WebDriverWait(driver, 10).until(
+                        ec.visibility_of_element_located((By.XPATH, elements.En_LoginPage_Register))).click()
+                    driver.press_keycode(4)
                     WebDriverWait(driver, 10).until(
                         ec.visibility_of_element_located((By.XPATH, elements.En_LoginPage_Register))).click()
                 except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
@@ -76,46 +82,47 @@ class TestRegister:
         pass
 
     # 手机区号根据x、y点击
-    def area_code_click(self, driver):
-        x = 500
-        y = 1090
+    @staticmethod
+    def xy_click(driver, x=None, y=None):
         touch = TouchAction(driver)
         touch.tap(x=x, y=y).perform()
 
     def area_code_select(self, driver, elements, app_language, logger, region):
         try:
             if region == "Chinese":
-                code_text = "中国大陆"
-                code_area = elements.Ch_Phone_Register_86
+                code_text = "China"
             elif region == "English":
-                code_text = "美国"
-                code_area = elements.En_Phone_Register_1
+                code_text = "USA"
             else:
                 code_text = None
-                code_area = None
                 logger.error("请输入国家名称或国家代号")
+            # 出于未知原因导致元素无法正常定位到，使用x、y点击
             if app_language == "English":
-                driver.find_element(By.XPATH, elements.En_Phone_Register_AreaCodeList).click()
-                sleep(2)
-                self.area_code_click(driver)
+                WebDriverWait(driver, 10).until(
+                    ec.visibility_of_element_located((By.XPATH, elements.En_Phone_Register_AreaCodeList))
+                ).click()
+                sleep(0.5)
+                self.xy_click(driver, 500, 1090)
                 logger.info("已点击搜索框")
                 # 选择区号
-                driver.find_element(By.XPATH, elements.En_Phone_Register_AreaCode_Search).send_keys(code_text)
+                self.virtural_keyboard_input(driver, code_text)
                 logger.info("已发送搜索文本")
                 driver.hide_keyboard()
                 logger.info("已关闭虚拟键盘")
-                driver.find_element(By.XPATH, code_area).click()
+                sleep(0.5)
+                self.xy_click(driver, 500, 1370)
             elif app_language == "Chinese":
                 driver.find_element(By.XPATH, elements.Ch_Phone_Register_AreaCodeList).click()
-                sleep(2)
-                self.area_code_click(driver)
+                sleep(0.5)
+                self.xy_click(driver, 500, 1080)
                 logger.info("已点击搜索框")
                 # 选择区号
-                driver.find_element(By.XPATH, elements.Ch_Phone_Register_AreaCode_Search).send_keys(code_text)
+                self.virtural_keyboard_input(driver, code_text)
                 logger.info("已发送搜索文本")
                 driver.hide_keyboard()
                 logger.info("已关闭虚拟键盘")
-                driver.find_element(By.XPATH, code_area).click()
+                sleep(0.5)
+                self.xy_click(driver, 500, 1370)
             else:
                 logger.error("请输入正确的语言")
         except (selenium.common.exceptions.TimeoutException,
@@ -126,10 +133,22 @@ class TestRegister:
 
     # 使用虚拟键盘输入数字
     def virtural_keyboard_input(self, driver, data):
-        for digit in data:
-            digit = int(digit)
-            key_code = digit + 7  # 转换成对应的键码
-            driver.press_keycode(key_code)
+        keys = Config.Config.key
+        is_complete = False
+        for key, value in keys.items():
+            if key == data:
+                driver.press_keycode(value)
+                is_complete = True
+                break
+        if not is_complete:
+            data = list(data)
+            for i in data:
+                if i in keys:
+                    key_code = keys[i]
+                    driver.press_keycode(key_code)
+                else:
+                    raise ValueError("输入值没有对应的字典")
+
 
     # 输入手机号
     def phone_number_input(self, driver, elements, app_language, phone, logger):
@@ -151,6 +170,7 @@ class TestRegister:
             logger.info("已关闭虚拟键盘")
         except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException) as e:
             logger.error(f"未找到手机号输入框,异常：{e}")
+
 
     def nickname_input(self, driver, elements, nickname, logger):
         try:
@@ -197,9 +217,9 @@ class TestRegister:
         app_language, region, elements, tips_element, config = info
         driver = setup["driver"]
         logger = setup["logger"]
-        # self.area_code_select(driver, elements, app_language, logger, region)
+        self.area_code_select(driver, elements, app_language, logger, "Chinese")
         self.phone_number_input(driver, elements, app_language, config.phone, logger)
-        # self.nickname_input(driver, elements, config.nick_name, logger)
-        # self.password_input(driver, elements, config.phone_password, logger)
-        # self.confirm_password_input(driver, elements, config.phone_confirm_password, logger)
+        self.nickname_input(driver, elements, config.nick_name, logger)
+        self.password_input(driver, elements, config.phone_password, logger)
+        self.confirm_password_input(driver, elements, config.phone_confirm_password, logger)
         # self.region_selection(driver, elements, logger, region)
