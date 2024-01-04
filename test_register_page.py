@@ -93,7 +93,7 @@ class TestRegister:
         y = round(y * screen_height/100)
         logger.info(f"x={x}, y={y}")
         touch = TouchAction(driver)
-        touch.tap(x, y).perform()
+        touch.tap(x=x, y=y).perform()
         # TODO 需要增加自动根据屏幕大小计算元素xy坐标
 
     def area_code_select(self, info, region):
