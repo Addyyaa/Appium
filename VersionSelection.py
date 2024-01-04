@@ -145,8 +145,8 @@ class VersionSelection:
                 self.driver.find_element(by='xpath', value=self.element.En_Confirm).click()
             else:
                 print("error")
-                logger.error("请配置正确的语言")
+                logger.error(f"请配置正确的语言和版本，当前version：{version},language：{language}")
                 self.driver.implicitly_wait(10)
         else:
             print("error")
-            logger.error("请配置正确的语言")
+            logger.error(f"请配置正确的语言和版本，当前version：{version},language：{language}")

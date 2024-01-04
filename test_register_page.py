@@ -40,7 +40,7 @@ class TestRegister:
     @pytest.fixture(scope="session", autouse=True)
     def info(self):
         app_language = "English"
-        region = "China"
+        region = "Chinese"
         register_type = 'phone'
         elements = Element.Element_version
         tips_element = ElementTips.register_page_tips
