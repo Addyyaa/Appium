@@ -68,6 +68,11 @@ class TestRegister:
 
         return _goto_register_page
 
+    @pytest.fixture(scope="function", autouse=True)
+    def content_clear(self):
+        # TODO
+        pass
+
     @staticmethod
     def wait_find(strategy, element, timeout=10):
         if strategy.upper() == 'XPATH':
@@ -192,6 +197,7 @@ class TestRegister:
             # 由于文本框不支持sendkeys操作，所以使用虚拟键盘输入
             self.virtural_keyboard_input(phone)
             logger.info("已输入手机号")
+            return phone
         except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException) as e:
             logger.error(f"未找到手机号输入框,异常：{e}")
 
@@ -285,12 +291,42 @@ class TestRegister:
             print(driver.page_source)
             logger.error("未找到获取验证码按钮")
 
+    def verification_code_read(self, info):
+        app_language, region_info, elements, tips_element, config = info
+        logger.info("开始获取短信验证码")
+        driver.open_notifications()
+        logger.info("已打开通知栏")
+        try:
+            code = self.wait_find('xpath', elements.sms_code, 30)
+            txt = code.text
+            if code:
+                pattern = r"码为：(\d+)"
+                verify_code = re.search(pattern, txt).group(1)
+                logger.info(f"验证码获取成功：{txt}，验证码为：{verify_code}")
+                if verify_code:
+                    logger.info("清除通知栏内容")
+                    self.wait_find('id', elements.notification_clear, 5).click()
+                    logger.info("已清除通知栏内容并已关闭")
+                    return verify_code
+                else:
+                    logger.error("验证码获取失败，未能正则匹配到验证码")
+            else:
+                logger.error("验证码获取失败，未找到对应元素")
+        except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
+            print(driver.page_source)
+            logger.error("未找到短信验证码")
+            pytest.fail("未找到短信验证码")
+
     def verification_code_input(self, verify_code):
         self.xy_click(27.78, 69.88)
         self.virtural_keyboard_input(verify_code)
 
-    def phone_number_format_validation(self, info, phone):
+    def phone_number_format_validation(self, info, *phone):
         app_language, region_info, elements, tips_element, config = info
+        if phone:
+            phone = phone
+        else:
+            phone = self.phone_number_input
         phone = int(phone)
         if region_info == "Chinese":
             areacode = "86"
@@ -303,13 +339,13 @@ class TestRegister:
             parsed_number = phonenumbers.parse(f"+{areacode}{phone}")
             is_valid_number = phonenumbers.is_valid_number(parsed_number)
             if is_valid_number:
-                logger.info("号码校验通过")
+                logger.info(f"号码：{phone}校验通过")
             else:
-                logger.error("号码校验失败")
+                logger.error(f"号码：{phone}校验失败")
             return is_valid_number
         except phonenumbers.NumberParseException as e:
             logging.error(f"号码解析异常{e}")
-            return False
+            pytest.fail("号码解析异常")
 
     def register_button_click(self):
         # TODO
@@ -327,5 +363,6 @@ class TestRegister:
         self.confirm_password_input(info, Config.Config.phone_confirm_password)
         self.region_selection(info, "English")
         self.verification_code_get(info)
+        self.verification_code_read(info)
         self.verification_code_input(1234)
-        self.phone_number_format_validation(info, 15250996938)
+        self.phone_number_format_validation(info)
