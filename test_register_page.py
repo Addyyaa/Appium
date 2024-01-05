@@ -178,7 +178,7 @@ class TestRegister:
                     driver.press_keycode(key_code)
                     driver.hide_keyboard()
                 else:
-                    raise ValueError("输入值没有对应的字典")
+                    raise ValueError(f"输入值没有对应的字典：i={i}，data={data}")
 
     # 输入手机号
     def phone_number_input(self, info, phone):
@@ -197,7 +197,7 @@ class TestRegister:
             # 由于文本框不支持sendkeys操作，所以使用虚拟键盘输入
             self.virtural_keyboard_input(phone)
             logger.info("已输入手机号")
-            return phone
+            self.phone = phone
         except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException) as e:
             logger.error(f"未找到手机号输入框,异常：{e}")
 
@@ -267,7 +267,8 @@ class TestRegister:
                     s = self.wait_find('xpath', elements.Ch_Phone_Register_Region)
                     logger.info(f"元素为：{s}")
                     s.click()
-                    break
+                    if s:
+                        break
                 except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
                     logger.error("未找地区相关元素")
                     logger.info(driver.page_source)
@@ -284,9 +285,14 @@ class TestRegister:
     def verification_code_get(self, info):
         app_language, region_info, elements, tips_element, config = info
         try:
-            s = self.wait_find('xpath', elements.Phone_Register_GetCode)
-            s.click()
-            logger.info("已点击获取验证码按钮")
+            for i in range(3):
+                s = self.wait_find('xpath', elements.Phone_Register_GetCode)
+                s.click()
+                sleep(2)
+                txt = s.text
+                if txt is not None and txt != "":
+                    logger.info(f"已点击获取验证码按钮，元素text：{txt}，type：{type(txt)}")
+                    break
         except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
             print(driver.page_source)
             logger.error("未找到获取验证码按钮")
@@ -307,7 +313,7 @@ class TestRegister:
                     logger.info("清除通知栏内容")
                     self.wait_find('id', elements.notification_clear, 5).click()
                     logger.info("已清除通知栏内容并已关闭")
-                    return verify_code
+                    self.verify_code = verify_code
                 else:
                     logger.error("验证码获取失败，未能正则匹配到验证码")
             else:
@@ -317,17 +323,25 @@ class TestRegister:
             logger.error("未找到短信验证码")
             pytest.fail("未找到短信验证码")
 
-    def verification_code_input(self, verify_code):
+    def verification_code_input(self, info, *verify_code):
+        if verify_code:
+            verify_code = str(verify_code[0])
+            logger.info(f"有验证码参数：{verify_code}")
+        else:
+            verify_code = self.verify_code
+            logger.info(f"没有验证码参数，使用读取的验证码：{verify_code}")
         self.xy_click(27.78, 69.88)
         self.virtural_keyboard_input(verify_code)
 
     def phone_number_format_validation(self, info, *phone):
         app_language, region_info, elements, tips_element, config = info
         if phone:
-            phone = phone
+            phone = str(phone[0])
+            logger.info(f"使用新传入的手机号：{phone}")
         else:
-            phone = self.phone_number_input
-        phone = int(phone)
+            phone = self.phone
+            logger.info(f"使用默认手机号：{phone}")
+        phone = str(phone)
         if region_info == "Chinese":
             areacode = "86"
         elif region_info == "English":
@@ -357,12 +371,12 @@ class TestRegister:
 
     def test_casse(self, setup, info):
         self.area_code_select(info, "Chinese")
-        self.phone_number_input(info, Config.Config.phone)
+        self.phone_number_input(info, 15250996938)
         self.nickname_input(info, Config.Config.nick_name)
         self.password_input(info, Config.Config.phone_password)
         self.confirm_password_input(info, Config.Config.phone_confirm_password)
-        self.region_selection(info, "English")
+        self.region_selection(info, "Chinese")
         self.verification_code_get(info)
         self.verification_code_read(info)
-        self.verification_code_input(1234)
+        self.verification_code_input(info)
         self.phone_number_format_validation(info)
