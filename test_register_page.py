@@ -133,8 +133,6 @@ class TestRegister:
                 # 选择区号
                 self.virtural_keyboard_input(code_text)
                 logger.info("已发送搜索文本")
-                driver.hide_keyboard()
-                logger.info("已关闭虚拟键盘")
                 sleep(0.5)
                 self.xy_click(46.30, 59.46)
             elif app_language == "Chinese":
@@ -145,8 +143,6 @@ class TestRegister:
                 # 选择区号
                 self.virtural_keyboard_input(code_text)
                 logger.info("已发送搜索文本")
-                driver.hide_keyboard()
-                logger.info("已关闭虚拟键盘")
                 sleep(0.5)
                 self.xy_click(46.30, 59.46)
             else:
@@ -159,11 +155,14 @@ class TestRegister:
     # 使用虚拟键盘输入数字
     @staticmethod
     def virtural_keyboard_input(data):
+        data = str(data)
         keys = Config.Config.key
         is_complete = False
         for key, value in keys.items():
             if key == data:
                 driver.press_keycode(value)
+                driver.hide_keyboard()
+                logger.info("已关闭虚拟键盘")
                 is_complete = True
                 break
         if not is_complete:
@@ -172,6 +171,7 @@ class TestRegister:
                 if i in keys:
                     key_code = keys[i]
                     driver.press_keycode(key_code)
+                    driver.hide_keyboard()
                 else:
                     raise ValueError("输入值没有对应的字典")
 
@@ -192,8 +192,6 @@ class TestRegister:
             # 由于文本框不支持sendkeys操作，所以使用虚拟键盘输入
             self.virtural_keyboard_input(phone)
             logger.info("已输入手机号")
-            driver.hide_keyboard()
-            logger.info("已关闭虚拟键盘")
         except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException) as e:
             logger.error(f"未找到手机号输入框,异常：{e}")
 
@@ -230,6 +228,19 @@ class TestRegister:
             print(driver.page_source)
             logger.error("未找到确认密码输入框")
             pytest.fail("未找到确认密码输入框")
+        except selenium.common.exceptions.WebDriverException:
+            logger.error("驱动异常，尝试第二遍查找")
+            try:
+                for i in range(1):
+                    elements = WebDriverWait(driver, 10).until(
+                        ec.visibility_of_all_elements_located((By.CLASS_NAME, elements.Ch_Phone_Register_ConfirmPasswd))
+                    )
+                    elements[3].send_keys(password)
+                    logger.info("已输入确认密码")
+            except selenium.common.exceptions.WebDriverException:
+                logger.error("二次查找失败，驱动仍然异常")
+                pytest.fail("驱动异常，结束当前用例")
+            pytest.fail("未找到确认密码输入框")
 
     def region_selection(self, info, region):
         app_language, region_info, elements, tips_element, config = info
@@ -245,15 +256,15 @@ class TestRegister:
             region_element = elements.Selection_Cancel
             logger.error("语言和版本不正确，取消地域操作")
         try:
-            for i in range(3):
+            for i in range(5):
                 try:
                     s = self.wait_find('xpath', elements.Ch_Phone_Register_Region)
                     logger.info(f"元素为：{s}")
                     s.click()
                     break
                 except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
-                    print(driver.page_source)
                     logger.error("未找地区相关元素")
+                    logger.info(driver.page_source)
                     pytest.fail("未找地区相关元素")
             logger.info("已点击地区")
             sleep(0.5)
@@ -264,13 +275,41 @@ class TestRegister:
             logger.error("未找地区相关元素")
             pytest.fail("未找地区相关元素")
 
-    def verification_code_get(self):
-        # TODO
-        pass
+    def verification_code_get(self, info):
+        app_language, region_info, elements, tips_element, config = info
+        try:
+            s = self.wait_find('xpath', elements.Phone_Register_GetCode)
+            s.click()
+            logger.info("已点击获取验证码按钮")
+        except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
+            print(driver.page_source)
+            logger.error("未找到获取验证码按钮")
 
-    def verification_code_input(self):
-        # TODO
-        pass
+    def verification_code_input(self, verify_code):
+        self.xy_click(27.78, 69.88)
+        self.virtural_keyboard_input(verify_code)
+
+    def phone_number_format_validation(self, info, phone):
+        app_language, region_info, elements, tips_element, config = info
+        phone = int(phone)
+        if region_info == "Chinese":
+            areacode = "86"
+        elif region_info == "English":
+            areacode = "1"
+        else:
+            areacode = "86"
+            logger.error("未知地区,使用默认区号86校验")
+        try:
+            parsed_number = phonenumbers.parse(f"+{areacode}{phone}")
+            is_valid_number = phonenumbers.is_valid_number(parsed_number)
+            if is_valid_number:
+                logger.info("号码校验通过")
+            else:
+                logger.error("号码校验失败")
+            return is_valid_number
+        except phonenumbers.NumberParseException as e:
+            logging.error(f"号码解析异常{e}")
+            return False
 
     def register_button_click(self):
         # TODO
@@ -287,3 +326,6 @@ class TestRegister:
         self.password_input(info, Config.Config.phone_password)
         self.confirm_password_input(info, Config.Config.phone_confirm_password)
         self.region_selection(info, "English")
+        self.verification_code_get(info)
+        self.verification_code_input(1234)
+        self.phone_number_format_validation(info, 15250996938)
