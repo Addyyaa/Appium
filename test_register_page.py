@@ -53,17 +53,13 @@ class TestRegister:
         def _goto_register_page(driver, elements, app_language):
             try:
                 if app_language == "Chinese":
-                    WebDriverWait(driver, 10).until(
-                        ec.visibility_of_element_located((By.XPATH, elements.Ch_LoginPage_Register))).click()
+                    self.wait_find("xpath", elements.Ch_LoginPage_Register).click()
                     driver.press_keycode(4)
-                    WebDriverWait(driver, 10).until(
-                        ec.visibility_of_element_located((By.XPATH, elements.Ch_LoginPage_Register))).click()
+                    self.wait_find("xpath", elements.Ch_LoginPage_Register).click()
                 elif app_language == 'English':
-                    WebDriverWait(driver, 10).until(
-                        ec.visibility_of_element_located((By.XPATH, elements.En_LoginPage_Register))).click()
+                    self.wait_find("xpath", elements.En_LoginPage_Register).click()
                     driver.press_keycode(4)
-                    WebDriverWait(driver, 10).until(
-                        ec.visibility_of_element_located((By.XPATH, elements.En_LoginPage_Register))).click()
+                    self.wait_find("xpath", elements.En_LoginPage_Register).click()
                 else:
                     logger.error("请配置正确的语言")
             except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
@@ -71,6 +67,29 @@ class TestRegister:
                 pytest.fail("没有找到注册按钮")
 
         return _goto_register_page
+
+    @staticmethod
+    def wait_find(strategy, element, timeout=10):
+        if strategy.upper() == 'XPATH':
+            return WebDriverWait(driver, timeout).until(
+                ec.visibility_of_element_located((By.XPATH, element))
+            )
+        elif strategy.upper() == 'ID':
+            return WebDriverWait(driver, timeout).until(
+                ec.visibility_of_element_located((By.ID, element))
+            )
+        elif strategy.upper() == 'CLASSNAME':
+            return WebDriverWait(driver, timeout).until(
+                ec.visibility_of_element_located((By.CLASS_NAME, element))
+            )
+        elif strategy.upper() == 'NAME':
+            return WebDriverWait(driver, timeout).until(
+                ec.visibility_of_element_located((By.NAME, element))
+            )
+        elif strategy.upper() == 'CSS_SELECTOR':
+            return WebDriverWait(driver, timeout).until(
+                ec.visibility_of_element_located((By.CSS_SELECTOR, element))
+            )
 
     def register_method_switch(self):
         # TODO 需要根据register_type进行切换注册方式
@@ -89,8 +108,8 @@ class TestRegister:
         screen_width = screen_size["width"]
         screen_height = screen_size["height"]
         print(f"手机像素为：{screen_height} * {screen_width}")
-        x = round(x * screen_width/100)
-        y = round(y * screen_height/100)
+        x = round(x * screen_width / 100)
+        y = round(y * screen_height / 100)
         logger.info(f"x={x}, y={y}")
         touch = TouchAction(driver)
         touch.tap(x=x, y=y).perform()
@@ -107,9 +126,7 @@ class TestRegister:
                 logger.error("请输入国家名称或国家代号")
             # 出于未知原因导致元素无法正常定位到，使用x、y点击
             if app_language == "English":
-                WebDriverWait(driver, 10).until(
-                    ec.visibility_of_element_located((By.XPATH, elements.En_Phone_Register_AreaCodeList))
-                ).click()
+                self.wait_find("xpath", elements.En_Phone_Register_AreaCodeList).click()
                 sleep(0.5)
                 self.xy_click(46.29, 47.31)
                 logger.info("已点击搜索框")
@@ -170,9 +187,7 @@ class TestRegister:
             element = None
         try:
             logger.info(f"xpath：{element}")
-            WebDriverWait(driver, 30).until(
-                ec.visibility_of_element_located((By.XPATH, element))
-            ).click()
+            self.wait_find('xpath', element).click()
             logger.info("已点击手机号输入框")
             # 由于文本框不支持sendkeys操作，所以使用虚拟键盘输入
             self.virtural_keyboard_input(phone)
@@ -192,13 +207,10 @@ class TestRegister:
             logger.error("未找到昵称输入框")
             pytest.fail("未找到昵称输入框")
 
-    @staticmethod
-    def password_input(info, password):
+    def password_input(self, info, password):
         app_language, region_info, elements, tips_element, config = info
         try:
-            WebDriverWait(driver, 10).until(
-                ec.visibility_of_element_located((By.XPATH, elements.Ch_Phone_Register_Passwd))
-            ).send_keys(password)
+            self.wait_find("xpath", elements.Ch_Phone_Register_Passwd).send_keys(password)
             logger.info("已输入密码")
         except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
             print(driver.page_source)
@@ -219,8 +231,7 @@ class TestRegister:
             logger.error("未找到确认密码输入框")
             pytest.fail("未找到确认密码输入框")
 
-    @staticmethod
-    def region_selection(info, region):
+    def region_selection(self, info, region):
         app_language, region_info, elements, tips_element, config = info
         if app_language == "Chinese" and region == "Chinese":
             region_element = elements.Phone_Region_Selection_China
@@ -234,11 +245,9 @@ class TestRegister:
             region_element = elements.Selection_Cancel
             logger.error("语言和版本不正确，取消地域操作")
         try:
-            for i in range(2):
+            for i in range(3):
                 try:
-                    s = WebDriverWait(driver, 10).until(
-                        ec.visibility_of_element_located((By.XPATH, elements.Ch_Phone_Register_Region))
-                    )
+                    s = self.wait_find('xpath', elements.Ch_Phone_Register_Region)
                     logger.info(f"元素为：{s}")
                     s.click()
                     break
@@ -248,9 +257,7 @@ class TestRegister:
                     pytest.fail("未找地区相关元素")
             logger.info("已点击地区")
             sleep(0.5)
-            WebDriverWait(driver, 10).until(
-                ec.visibility_of_element_located((By.XPATH, region_element))
-            ).click()
+            self.wait_find('xpath', region_element).click()
             logger.info("已选择地区")
         except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
             print(driver.page_source)
@@ -272,10 +279,6 @@ class TestRegister:
     def user_agreement_checkbox(self):
         # TODO
         pass
-
-
-
-
 
     def test_casse(self, setup, info):
         self.area_code_select(info, "Chinese")
