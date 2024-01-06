@@ -76,7 +76,7 @@ class TestRegister:
             driver.open_notifications()
             logger.info("开始清理通知栏内容")
             try:
-                self.wait_find("id", elements.notification_clear).click()
+                self.wait_find("id", elements.notification_clear, 2).click()
             except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
                 logger.error("没有可清理的内容，退出通知栏")
                 driver.press_keycode(4)
@@ -247,7 +247,7 @@ class TestRegister:
                 ec.visibility_of_all_elements_located((By.CLASS_NAME, elements.Ch_Phone_Register_ConfirmPasswd))
             )
             logger.info(f"{s[3].text}\n{s}")
-            s.clear()
+            s[3].clear()
             s[3].send_keys(password)
             logger.info("已输入确认密码")
         except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
