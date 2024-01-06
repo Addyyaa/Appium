@@ -206,10 +206,10 @@ class Element_version:
     Ch_Phone_Register_RegionUSA = '//android.widget.TextView[@text="美国"]'
     Ch_Phone_Register_RegionCancel = '//android.widget.TextView[@text="取消"]'
     Phone_Register_GetCode = '//android.view.View[9]/following-sibling::android.widget.TextView[1]'
-    Phone_Register_useragree = '//android.view.View[10]/child::*[1]/child::*[1]'
+    Phone_Register_useragree = '//android.widget.Image[@text="kegouxuan"] | //*[@text="gouxuanzhong"]'
     # 此元素无法通过sendkeys输入，需要通过虚拟键盘
     Phone_Register_CodeInput = '//android.view.View[9]/child::*[1]/child::*[1]/child::*[2]'
-    Phone_RegisterButton = '//android.view.View[9]/following-sibling::*[2]'
+    Phone_RegisterButton = '//android.webkit.WebView/child::*[17]'
     Ch_Email_Register_Email = '(//android.view.View[@resource-id="input"])[1]/android.view.View/android.widget.EditText'
     Ch_Email_Register_Nickname = '(//android.view.View[@resource-id="input"])[2]/android.view.View/android.widget.EditText'
     Ch_Email_Register_Passwd = '(//android.view.View[@resource-id="input"])[3]/android.view.View/android.widget.EditText'

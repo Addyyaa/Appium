@@ -69,9 +69,22 @@ class TestRegister:
         return _goto_register_page
 
     @pytest.fixture(scope="function", autouse=True)
-    def content_clear(self):
-        # TODO
-        pass
+    def content_clear(self, info):
+        if "清理通知栏":
+            app_language, region_info, elements, tips_element, config = info
+            # 清理通知栏
+            driver.open_notifications()
+            logger.info("开始清理通知栏内容")
+            try:
+                self.wait_find("id", elements.notification_clear).click()
+            except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
+                logger.error("没有可清理的内容，退出通知栏")
+                driver.press_keycode(4)
+            logger.info("已清理通知栏内容")
+        yield
+        if "清理输入框":
+            # 未防止在清理的过程中发生元素定位异常，故在各方法内实现清理
+            pass
 
     @staticmethod
     def wait_find(strategy, element, timeout=10):
@@ -192,7 +205,9 @@ class TestRegister:
             element = None
         try:
             logger.info(f"xpath：{element}")
-            self.wait_find('xpath', element).click()
+            s = self.wait_find('xpath', element)
+            s.clear()
+            s.click()
             logger.info("已点击手机号输入框")
             # 由于文本框不支持sendkeys操作，所以使用虚拟键盘输入
             self.virtural_keyboard_input(phone)
@@ -205,7 +220,9 @@ class TestRegister:
     def nickname_input(info, nickname):
         app_language, region_info, elements, tips_element, config = info
         try:
-            driver.find_element(By.XPATH, elements.Ch_Phone_Register_Nickname).send_keys(nickname)
+            s = driver.find_element(By.XPATH, elements.Ch_Phone_Register_Nickname)
+            s.clear()
+            s.send_keys(nickname)
             logger.info("已输入昵称")
         except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
             logger.error("未找到昵称输入框")
@@ -214,21 +231,24 @@ class TestRegister:
     def password_input(self, info, password):
         app_language, region_info, elements, tips_element, config = info
         try:
-            self.wait_find("xpath", elements.Ch_Phone_Register_Passwd).send_keys(password)
+            s = self.wait_find("xpath", elements.Ch_Phone_Register_Passwd)
+            s.clear()
+            s.send_keys(password)
             logger.info("已输入密码")
         except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
             print(driver.page_source)
             logger.error("未找到密码输入框")
             pytest.fail("未找到密码输入框")
 
-    @staticmethod
-    def confirm_password_input(info, password):
+    def confirm_password_input(self, info, password):
         app_language, region_info, elements, tips_element, config = info
         try:
-            elements = WebDriverWait(driver, 10).until(
+            s = WebDriverWait(driver, 10).until(
                 ec.visibility_of_all_elements_located((By.CLASS_NAME, elements.Ch_Phone_Register_ConfirmPasswd))
             )
-            elements[3].send_keys(password)
+            logger.info(f"{s[3].text}\n{s}")
+            s.clear()
+            s[3].send_keys(password)
             logger.info("已输入确认密码")
         except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
             print(driver.page_source)
@@ -241,11 +261,14 @@ class TestRegister:
                     elements = WebDriverWait(driver, 10).until(
                         ec.visibility_of_all_elements_located((By.CLASS_NAME, elements.Ch_Phone_Register_ConfirmPasswd))
                     )
+                    elements[3].clear()
                     elements[3].send_keys(password)
                     logger.info("已输入确认密码")
             except selenium.common.exceptions.WebDriverException:
-                logger.error("二次查找失败，驱动仍然异常")
-                pytest.fail("驱动异常，结束当前用例")
+                logger.error("二次查找失败，驱动仍然异常,使用xy点击")
+                self.xy_click(46.30, 53.82)
+                driver.hide_keyboard()
+                self.virtural_keyboard_input("sf123123")
             pytest.fail("未找到确认密码输入框")
 
     def region_selection(self, info, region):
@@ -361,13 +384,75 @@ class TestRegister:
             logging.error(f"号码解析异常{e}")
             pytest.fail("号码解析异常")
 
-    def register_button_click(self):
-        # TODO
-        pass
+    def register_button_click(self, info):
+        app_language, region_info, elements, tips_element, config = info
+        for i in range(2):
+            try:
+                logger.info("开始点击注册按钮")
+                s = self.wait_find('xpath', elements.Phone_RegisterButton)
+                txt = s.text
+                s.click()
+                if txt is not None and txt != "":
+                    logger.info(f"已点击注册按钮，元素text：{txt}，type：{type(txt)}")
+                    break
+            except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
+                print(driver.page_source)
+                logger.error("未找到注册按钮")
 
-    def user_agreement_checkbox(self):
-        # TODO
-        pass
+    def user_agreement_checkbox(self, info, status="AGREE"):
+        """
+        用户协议勾选
+        :param info: 必填
+        :param status: AGREE 勾选用户协议，DISAGREE 取消勾选
+        """
+        app_language, region_info, elements, tips_element, config = info
+        try:
+            s = self.wait_find('xpath', elements.Phone_Register_useragree)
+            txt = s.text
+            if status.upper() == 'AGREE':
+                if txt == "kegouxuan":
+                    s.click()
+                    logger.info("已勾选用户协议")
+                elif txt == "gouxuanzhong":
+                    logger.info("已勾选用户协议,无须再次勾选")
+                else:
+                    logger.error(f"未能正常勾选用户协议,原因为元素text获取异常{txt}")
+            elif status.upper() == 'DISAGREE':
+                if txt == "gouxuanzhong":
+                    s.click()
+                    logger.info("已勾选用户协议")
+                elif txt == "kegouxuan":
+                    logger.info("当前未处于勾选状态无需操作")
+                else:
+                    logger.error(f"未能正常勾选用户协议,原因为元素text获取异常{txt}")
+        except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
+            logger.error("未找到用户协议复选框元素，尝试二次查找")
+            for i in range(1):
+                try:
+                    s = self.wait_find('xpath', elements.Phone_Register_useragree)
+                    txt = s.text
+                    if status.upper() == 'AGREE':
+                        if txt == "kegouxuan":
+                            s.click()
+                            logger.info("已勾选用户协议")
+                        elif txt == "gouxuanzhong":
+                            logger.info("已勾选用户协议,无须再次勾选")
+                        else:
+                            logger.error(f"未能正常勾选用户协议,原因为元素text获取异常{txt}")
+                    elif status.upper() == 'DISAGREE':
+                        if txt == "gouxuanzhong":
+                            s.click()
+                            logger.info("已勾选用户协议")
+                        elif txt == "kegouxuan":
+                            logger.info("当前未处于勾选状态无需操作")
+                        else:
+                            logger.error(f"未能正常勾选用户协议,原因为元素text获取异常{txt}")
+                except (selenium.common.exceptions.TimeoutException, selenium.common.exceptions.NoSuchElementException):
+                    logger.error("二次定位用户协议复选框元素失败")
+                    pytest.fail("未能成功定位到用户协议复选框")
+            print(driver.page_source)
+            logger.error("未找到用户协议复选框")
+            pytest.fail("未找到用户协议复选框")
 
     def test_casse(self, setup, info):
         self.area_code_select(info, "Chinese")
@@ -376,7 +461,13 @@ class TestRegister:
         self.password_input(info, Config.Config.phone_password)
         self.confirm_password_input(info, Config.Config.phone_confirm_password)
         self.region_selection(info, "Chinese")
-        self.verification_code_get(info)
-        self.verification_code_read(info)
-        self.verification_code_input(info)
+        # self.verification_code_get(info)
+        # self.verification_code_read(info)
+        # self.verification_code_input(info)
+        self.phone_number_format_validation(info)
+        self.user_agreement_checkbox(info)
+        self.register_button_click(info)
+
+    def test_case2(self, setup, info):
+        self.phone_number_input(info, 12345678)
         self.phone_number_format_validation(info)
