@@ -68,31 +68,27 @@ print("当前活动:", current_activity)
 
 current_package = driver.current_package
 print("当前应用包名:", current_package)
-if current_package == "com.yuerin.setting":
-    # 测试HDMI IN
-    display = wait_find('xpath',
-                        '//android.widget.TextView[@resource-id="com.yuerin.setting:id/name" and @text="显示"]')
-    display.click()
-    hdmi_in = wait_find('id', 'com.yuerin.setting:id/tv_hdmi_in_label')
-    hdmi_in.click()
-elif current_package == "com.yuerin.launcher" and current_activity == ".ui.home.HomeActivity":
-    try:
-        wait_find("id", "com.yuerin.launcher:id/btn_setting")
+for i in range(5):
+    if current_package == "com.yuerin.setting":
         # 测试HDMI IN
         display = wait_find('xpath',
                             '//android.widget.TextView[@resource-id="com.yuerin.setting:id/name" and @text="显示"]')
         display.click()
         hdmi_in = wait_find('id', 'com.yuerin.setting:id/tv_hdmi_in_label')
         hdmi_in.click()
-    except (selenium.common.exceptions.NoSuchElementException, selenium.common.exceptions.TimeoutException):
-        print("未找到设置按钮")
-
-
-# 检查是否检测到第二屏幕
-sleep(9)
-result = run_adb_command('adb shell dumpsys display | grep "HDMI 屏幕"')
-if result:
-    print(result.stderr)
-else:
-    print("未检测到第二屏幕")
+    elif current_package == "com.yuerin.launcher" and current_activity == ".ui.home.HomeActivity":
+        try:
+            wait_find("id", "com.yuerin.launcher:id/btn_setting")
+            # 测试HDMI IN
+            display = wait_find('xpath',
+                                '//android.widget.TextView[@resource-id="com.yuerin.setting:id/name" and @text="显示"]')
+            display.click()
+            hdmi_in = wait_find('id', 'com.yuerin.setting:id/tv_hdmi_in_label')
+            hdmi_in.click()
+        except (selenium.common.exceptions.NoSuchElementException, selenium.common.exceptions.TimeoutException):
+            print("未找到设置按钮")
+    sleep(10)
+    driver.press_keycode(4)
+    driver.press_keycode(4)
+    run_adb_command("adb logcat > d:hdmi.txt")
 
