@@ -10,6 +10,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.by import By
 import subprocess
+import threading
 
 """
 安装image插件：appium plugin install images
@@ -57,6 +58,8 @@ def run_adb_command(command):
         return result.stdout.strip()
     except subprocess.CalledProcessError as e:
         return f"Error: {e}"
+
+
 # pc = wait_find("id", "com.yuerin.launcher:id/btn_switch_uvc")
 # for i in range(5):
 #     element1.click()
@@ -68,7 +71,11 @@ print("当前活动:", current_activity)
 
 current_package = driver.current_package
 print("当前应用包名:", current_package)
-for i in range(5):
+
+stop_event = threading.Event()
+for i in range(100):
+    thread1 =threading.Thread(target=run_adb_command, args=("adb logcat > d:hdmi_in.txt",))
+    thread1.start()
     if current_package == "com.yuerin.setting":
         # 测试HDMI IN
         display = wait_find('xpath',
@@ -87,8 +94,8 @@ for i in range(5):
             hdmi_in.click()
         except (selenium.common.exceptions.NoSuchElementException, selenium.common.exceptions.TimeoutException):
             print("未找到设置按钮")
-    sleep(10)
+    sleep(15)
     driver.press_keycode(4)
     driver.press_keycode(4)
-    run_adb_command("adb logcat > d:hdmi.txt")
+    stop_event.set()
 

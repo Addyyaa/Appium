@@ -1,4 +1,5 @@
 from appium import webdriver
+from appium.options.android import UiAutomator2Options
 
 
 def get_driver():
@@ -10,7 +11,8 @@ def get_driver():
         'appActivity': 'io.dcloud.PandoraEntry',
         'automationName': 'UiAutomator2',  # 修正这里的键名
     }
-
-    driver = webdriver.Remote('http://127.0.0.1:4723/wd/hub', desired_caps)
+    options = UiAutomator2Options()
+    options.load_capabilities(desired_caps)
+    driver = webdriver.Remote('http://127.0.0.1:4723/wd/hub', options=options)
     driver.implicitly_wait(10)
     return driver
